@@ -18,5 +18,5 @@ if __name__ == "__main__":
     FROM employees
     LIMIT 10;
     """
-    df = query_athena(sample_query, database='sample_database', workgroup='primary')
+    df = query_athena(sample_query, workgroup='primary')
     print(df)

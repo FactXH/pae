@@ -43,7 +43,7 @@ django.setup()
 # === IMPORT MODELS ===
 try:
     from utils.query_runner.query_runner import QueryRunner
-    from engagement.models import Employee, Team, TeamMembership
+    from engagement.models import Employee, Team, TeamMembership, Role, Contract, Manager
     print("✅ Successfully imported Employee, Team, and TeamMembership models")
 except ImportError as e:
     print(f"❌ Failed to import: {e}")
@@ -172,6 +172,45 @@ def create_teams_with_query():
     return result_teams
 
 
+def create_job_roles_with_query():
+    """Create job roles using JobRole.load_from_query() method"""
+    
+    print("\n💼 Creating job roles using load_from_query...")
+    
+    job_roles_query = """
+    SELECT
+        job_catalog_level_id as factorial_id,
+        level_name,
+        role_name,
+        role_level_name
+    from slv_job_catalog
+    """
+    
+    print("🔧 Executing Role.load_from_query()...")
+    
+    result = Role.load_from_query(
+        query=job_roles_query,
+        unique_fields=['role_name'],
+        create_if_not_exists=True,
+        update_existing=False
+    )
+    
+    print(f"\n📊 Query Results:")
+    if result.get('success'):
+        print(f"  ✅ Success: {result.get('success')}")
+        print(f"  📈 Created: {result.get('created', 0)} job roles")
+        print(f"  🔄 Updated: {result.get('updated', 0)} job roles")
+        print(f"  ⏭️ Existing: {result.get('total_rows', 0) - result.get('created', 0)} job roles")
+        
+        # Show created job roles
+        instances = result.get('instances', [])
+
+        return instances
+    else:
+        print(f"  ❌ Error: {result.get('error')}")
+        return []
+
+
 def set_parent_teams():
     query = """
     SELECT
@@ -207,7 +246,6 @@ def set_parent_teams():
         team.save()
         print(f"  🔗 Linked {team.team_name} to {parent_team.team_name}")
     
-
 
 def create_memberships_with_query():
     """Create team memberships using direct QueryRunner (since TeamMembership doesn't inherit from BaseModel)"""
@@ -285,6 +323,115 @@ def create_memberships_with_query():
     except Exception as e:
         print(f"❌ Query execution failed: {e}")
 
+def create_contracts_with_query():
+    query = """
+    select
+        contract_id as contract_factorial_id,
+        employee_id as employee_factorial_id,
+        job_title as public_job_title,
+        effective_date as effective_from,
+        effective_to_date as effective_to,
+        salary_amount,
+        job_catalog_level_id as job_catalog_level_factorial_id
+
+    from slv_contracts
+    """
+
+    delete_contracts = Contract.objects.all().delete()
+
+    query_runner = QueryRunner()
+    result = query_runner.run_query(query, source='postgres', dataframe=True)
+
+    for _, row in result.iterrows():
+        # Convert row to dict to ensure we have clean Python values
+        row_dict = row.to_dict()
+        
+        # Find the employee and role
+        employee = Employee.objects.filter(factorial_id=row_dict['employee_factorial_id']).first()
+        role = Role.objects.filter(factorial_id=row_dict['job_catalog_level_factorial_id']).first()
+
+        if employee is None:
+            print(f"  ⚠️  Employee with factorial_id {row_dict['employee_factorial_id']} not found")
+            continue
+        if role is None:
+            print(f"  ⚠️  Role with factorial_id {row_dict['job_catalog_level_factorial_id']} not found")
+            continue
+        
+        try:
+            contract, created = Contract.objects.get_or_create(
+                employee=employee,
+                role=role,
+                effective_from=row_dict['effective_from'],
+                defaults={
+                    'effective_to': row_dict['effective_to'],
+                    'salary_amount': row_dict['salary_amount'],
+                    'job_title': row_dict['public_job_title']
+                }
+            )
+            
+            if created:
+                print(f"  ✅ Created contract for {employee.full_name} - {role.role_name}")
+            else:
+                print(f"  ⏭️  Skipped existing contract for {employee.full_name} - {role.role_name}")
+                
+        except Exception as e:
+            print(f"  ⚠️  Failed to create contract for {employee.full_name} - {role.role_name}: {str(e)}")
+            print(f"     Continuing with next contract...")
+            continue
+
+def create_managers_with_query():
+    query = """
+    select
+    employee_id as factorial_employee_id,
+    manager_id as factorial_manager_id,
+    effective_from,
+    effective_to
+from
+    br_athena_employee_managers_cdc
+    """
+
+    query_runner = QueryRunner()
+    result = query_runner.run_query(query, source='postgres', dataframe=True)
+    
+    for _, row in result.iterrows():
+        # Convert row to dict to ensure we have clean Python values
+        row_dict = row.to_dict()
+        
+        # Find the employee and manager
+        employee = Employee.objects.filter(factorial_id=row_dict['factorial_employee_id']).first()
+        manager = Employee.objects.filter(factorial_id=row_dict['factorial_manager_id']).first()
+
+        if employee is None:
+            print(f"  ⚠️  Employee with factorial_id {row_dict['factorial_employee_id']} not found")
+            continue
+        if manager is None:
+            print(f"  ⚠️  Manager with factorial_id {row_dict['factorial_manager_id']} not found")
+            continue
+        
+        try:
+            manager_record, created = Manager.objects.get_or_create(
+                employee=employee,
+                effective_from=row_dict['effective_from'],
+                defaults={
+                    'manager': manager,
+                    'effective_to': row_dict['effective_to']
+                }
+            )
+            
+            if created:
+                print(f"  ✅ Created manager {manager.full_name} for {employee.full_name}")
+            else:
+                print(f"  ⏭️  Skipped existing manager record for {employee.full_name}")
+                
+        except Exception as e:
+            print(f"  ⚠️  Failed to create manager record for {employee.full_name}: {str(e)}")
+            print(f"     Continuing with next record...")
+            continue
+
+
+
+
+
 def main():
     """Main execution function"""
     
@@ -293,17 +440,19 @@ def main():
     
     try:
         # Step 0: Clean up previous data
-        cleanup_previous_data()
+        # cleanup_previous_data()
         
-        # Step 1: Create employees using load_from_query
         # employees = create_employees_with_query()
         
-        teams = create_teams_with_query()
-        set_parent_teams()
+        # teams = create_teams_with_query()
+        # set_parent_teams()
 
-        memberships = create_memberships_with_query()
-        # all_memberships = create_memberships_with_query(employees, teams)
+        # memberships = create_memberships_with_query()
         
+        # roles = create_job_roles_with_query()
+        contracts = create_contracts_with_query()
+
+        # managers = create_managers_with_query()
         # Step 5: Demonstrate functionality
     except Exception as e:
         print(f"\n❌ Script failed: {e}")

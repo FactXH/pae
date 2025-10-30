@@ -52,7 +52,6 @@ contracts_aggregated as (
 )
 
 
-
 select 
     athena.employee_id,
     athena.access_id,

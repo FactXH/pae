@@ -43,4 +43,5 @@ select
         else false 
     end as is_current
 from manager_periods
+where manager_id is not null
 order by employee_id, effective_from

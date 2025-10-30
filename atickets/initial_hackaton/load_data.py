@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.append("/home/xavier/Documents/PAE/Projectes/pae")
+sys.path.append("/home/xavier/Documents/pae")
 
 
 from utils.query_runner.query_runner import QueryRunner
@@ -397,8 +397,9 @@ def load_performace():
         loader.load_from_athena(table)
 
 def load_basics_tables():
-    tables = ['teams', 'memberships', 'employees', 'contracts_contract_versions']
+    # tables = ['teams', 'memberships', 'employees', 'contracts_contract_versions']
     tables = ['job_catalog_roles']
+    tables = ['job_catalog_levels']
     loader = Loader()
     for table in tables:
         loader.load_from_athena(table)
@@ -408,7 +409,7 @@ def load_airtable_tables():
     query = """
     select * from airbyte_airtable_people_people_todos_sync_view_tblmwfnk5fykznky7
     """
-    loader.load_from_athena_custom_query(query, 'athena_airtable_people_todo')
+    loader.load_from_athena_custom_query(query, 'airtable_people_todo')
 
 def load_hiring_processes():
     loader = Loader()

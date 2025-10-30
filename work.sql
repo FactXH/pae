@@ -438,3 +438,71 @@ LEFT JOIN br_athena_memberships mem ON emp.employee_id = mem.employee_id
 LEFT JOIN br_athena_teams team ON mem.team_id = team.team_id
 WHERE team_level = 0
 group BY team.name
+
+
+;
+    SELECT *
+    from slv_job_catalog
+    where job_catalog_level_id is not null
+;
+
+select * from slv_employees where first_name like 'Xavier%'
+
+;
+select * from br_athena_job_catalog_levels;
+
+
+
+select * from athena_job_catalog_roles;
+select * from athena_contracts_contract_versions;
+
+;
+select 
+    employee_id as employee_factorial_id,
+    manager_id as manager_factorial_id,
+    effective_from,
+    effective_to
+from br_athena_employee_managers_cdc;
+
+
+
+    SELECT
+        job_catalog_level_id as factorial_id,
+        level_name,
+        role_name,
+        role_level_name
+    from slv_job_catalog;
+
+
+
+
+;
+
+
+select column_name, data_type
+from information_schema.columns
+where table_name = 'slv_contracts';
+
+    select
+        contract_id as contract_factorial_id,
+        employee_id as employee_factorial_id,
+        job_title as public_job_title,
+        effective_date as effective_from,
+        effective_to_date as effective_to,
+        salary_amount,
+        job_catalog_level_id as job_catalog_level_factorial_id
+
+    from slv_contracts;
+;
+
+select
+    employee_id as factorial_employee_id,
+    manager_id as factorial_manager_id,
+    effective_from,
+    effective_to
+from
+    br_athena_employee_managers_cdc;
+
+select * from slv_contracts where employee_id = '2343694';
+
+select * from slv_employees where employee_id = '2343694'

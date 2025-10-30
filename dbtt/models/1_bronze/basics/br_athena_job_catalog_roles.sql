@@ -11,7 +11,7 @@ deduplicated_roles as (
     select *
     from source_roles
     where rn = 1
-    and (_cdc is null or _cdc not like '%op=D%')
+    -- and (_cdc is null or _cdc not like '%op=D%')
 )
 
 select

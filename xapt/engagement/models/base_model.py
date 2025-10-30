@@ -23,6 +23,7 @@ class BaseModel(models.Model):
     is_active = models.BooleanField(default=True, help_text="Whether the entity is active")
     
     class Meta:
+        abstract = True  # Make this an abstract base class - won't create a database table
         verbose_name = "Base Model"
         verbose_name_plural = "Base Models"
         ordering = ['-created_at']

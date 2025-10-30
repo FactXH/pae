@@ -53,11 +53,13 @@ class EmployeeAdmin(BaseModelAdminMixin):
         'first_name', 'last_name', 'email'
     )
     
-    # Inherit base readonly fields and add team-related display methods
+    # Inherit base readonly fields and add team-related, manager-related, and contract display methods
     readonly_fields = BaseModelAdminMixin.base_readonly_fields + (
         'full_name_display', 'is_manager_display', 'subordinates_count', 
         'subordinates_links', 'current_teams_display', 'team_history_display',
-        'team_membership_summary'
+        'team_membership_summary', 'manager_relationship_summary', 
+        'current_manager_display', 'manager_history_display',
+        'contract_summary', 'current_contracts_display', 'contract_history_display'
     )
     
     # Add team membership inline
@@ -85,6 +87,22 @@ class EmployeeAdmin(BaseModelAdminMixin):
                 'team_membership_summary',
                 'current_teams_display',
                 'team_history_display'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Manager Relationships', {
+            'fields': (
+                'manager_relationship_summary',
+                'current_manager_display',
+                'manager_history_display'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Contracts', {
+            'fields': (
+                'contract_summary',
+                'current_contracts_display',
+                'contract_history_display'
             ),
             'classes': ('collapse',)
         }),
@@ -282,6 +300,181 @@ class EmployeeAdmin(BaseModelAdminMixin):
         
         return mark_safe("<br>".join(history_info))
     team_history_display.short_description = 'Team History'
+    
+    # Manager Relationship Display Methods
+    def manager_relationship_summary(self, obj):
+        """Display manager relationship summary statistics"""
+        from ..models import Manager
+        today = date.today()
+        
+        # Get all manager relationships where this employee is the managed employee
+        all_relationships = Manager.objects.filter(employee=obj).order_by('-effective_from')
+        active_relationships = [r for r in all_relationships if r.is_active_relationship]
+        historical_relationships = [r for r in all_relationships if not r.is_active_relationship]
+        
+        summary = []
+        summary.append(f"<strong>📊 Manager Relationship Summary:</strong>")
+        summary.append(f"• <span style='color: #28a745;'>Current Manager: {len(active_relationships)}</span>")
+        summary.append(f"• Historical Managers: {len(historical_relationships)}")
+        summary.append(f"• Total Manager Changes: {len(all_relationships)}")
+        
+        return mark_safe("<br>".join(summary))
+    manager_relationship_summary.short_description = 'Manager Summary'
+    
+    def current_manager_display(self, obj):
+        """Display current active manager"""
+        from ..models import Manager
+        today = date.today()
+        
+        active_relationships = [r for r in Manager.objects.filter(employee=obj) if r.is_active_relationship]
+        
+        if not active_relationships:
+            return mark_safe("<em>No current manager assigned</em>")
+        
+        manager_info = []
+        for relationship in active_relationships:
+            # Create manager link
+            manager_url = reverse('admin:engagement_employee_change', args=[relationship.manager.pk])
+            manager_link = format_html('<a href="{}">{}</a>', manager_url, relationship.manager.full_name)
+            
+            duration_info = f" (since {relationship.effective_from})"
+            manager_info.append(f"👤 {manager_link}{duration_info}")
+        
+        return mark_safe("<br>".join(manager_info))
+    current_manager_display.short_description = 'Current Manager'
+    
+    def manager_history_display(self, obj):
+        """Display historical manager relationships"""
+        from ..models import Manager
+        today = date.today()
+        
+        historical_relationships = [r for r in Manager.objects.filter(employee=obj) if not r.is_active_relationship]
+        
+        if not historical_relationships:
+            return mark_safe("<em>No manager history</em>")
+        
+        # Sort by most recent first
+        recent_historical = sorted(historical_relationships, key=lambda r: r.effective_from, reverse=True)[:10]
+        
+        history_info = []
+        for relationship in recent_historical:
+            # Create manager link
+            manager_url = reverse('admin:engagement_employee_change', args=[relationship.manager.pk])
+            manager_link = format_html('<a href="{}">{}</a>', manager_url, relationship.manager.full_name)
+            
+            # Format date range
+            end_date = relationship.effective_to or "ongoing"
+            duration_info = f" ({relationship.effective_from} → {end_date})"
+            
+            history_info.append(f"📋 {manager_link}{duration_info}")
+        
+        # Add note if there are more historical relationships
+        if len(historical_relationships) > 10:
+            history_info.append(f"<em>... and {len(historical_relationships) - 10} more historical managers</em>")
+        
+        return mark_safe("<br>".join(history_info))
+    manager_history_display.short_description = 'Manager History'
+    
+    # Contract Display Methods
+    def contract_summary(self, obj):
+        """Display contract summary statistics"""
+        from ..models import Contract
+        today = date.today()
+        
+        all_contracts = Contract.objects.filter(employee=obj).order_by('-effective_from')
+        active_contracts = [c for c in all_contracts if c.is_active_contract]
+        historical_contracts = [c for c in all_contracts if not c.is_active_contract]
+        
+        # Calculate total compensation from active contracts
+        total_compensation = sum(c.salary_amount for c in active_contracts if c.salary_amount)
+        
+        summary = []
+        summary.append(f"<strong>📊 Contract Summary:</strong>")
+        summary.append(f"• <span style='color: #28a745;'>Active Contracts: {len(active_contracts)}</span>")
+        if total_compensation:
+            summary.append(f"• Total Active Compensation: <strong>${total_compensation:,.2f}</strong>")
+        summary.append(f"• Historical Contracts: {len(historical_contracts)}")
+        summary.append(f"• Total Contracts: {len(all_contracts)}")
+        
+        return mark_safe("<br>".join(summary))
+    contract_summary.short_description = 'Contract Summary'
+    
+    def current_contracts_display(self, obj):
+        """Display current active contracts"""
+        from ..models import Contract
+        today = date.today()
+        
+        active_contracts = [c for c in Contract.objects.filter(employee=obj) if c.is_active_contract]
+        
+        if not active_contracts:
+            return mark_safe("<em>No active contracts</em>")
+        
+        # Sort by most recent first
+        active_contracts.sort(key=lambda c: c.effective_from, reverse=True)
+        
+        contracts_info = []
+        for contract in active_contracts:
+            # Create role link
+            role_url = reverse('admin:engagement_role_change', args=[contract.role.pk])
+            role_link = format_html('<a href="{}">{}</a>', role_url, contract.role.role_level_name)
+            
+            # Create contract link
+            contract_url = reverse('admin:engagement_contract_change', args=[contract.pk])
+            contract_link = format_html('<a href="{}" style="font-size: 11px;">[View]</a>', contract_url)
+            
+            # Format salary
+            salary_display = f"${contract.salary_amount:,.2f}" if contract.salary_amount else "N/A"
+            
+            # Duration info
+            duration_info = f" (since {contract.effective_from})"
+            
+            contracts_info.append(
+                f"💼 {role_link} - <strong>{salary_display}</strong>{duration_info} {contract_link}"
+            )
+        
+        return mark_safe("<br>".join(contracts_info))
+    current_contracts_display.short_description = 'Current Contracts'
+    
+    def contract_history_display(self, obj):
+        """Display historical contracts"""
+        from ..models import Contract
+        today = date.today()
+        
+        historical_contracts = [c for c in Contract.objects.filter(employee=obj) if not c.is_active_contract]
+        
+        if not historical_contracts:
+            return mark_safe("<em>No contract history</em>")
+        
+        # Sort by most recent first, limit to 10
+        recent_historical = sorted(historical_contracts, key=lambda c: c.effective_from, reverse=True)[:10]
+        
+        history_info = []
+        for contract in recent_historical:
+            # Create role link
+            role_url = reverse('admin:engagement_role_change', args=[contract.role.pk])
+            role_link = format_html('<a href="{}">{}</a>', role_url, contract.role.role_level_name)
+            
+            # Create contract link
+            contract_url = reverse('admin:engagement_contract_change', args=[contract.pk])
+            contract_link = format_html('<a href="{}" style="font-size: 11px;">[View]</a>', contract_url)
+            
+            # Format salary
+            salary_display = f"${contract.salary_amount:,.2f}" if contract.salary_amount else "N/A"
+            
+            # Format date range
+            end_date = contract.effective_to or "ongoing"
+            duration_info = f" ({contract.effective_from} → {end_date})"
+            
+            history_info.append(
+                f"📋 {role_link} - {salary_display}{duration_info} {contract_link}"
+            )
+        
+        # Add note if there are more historical contracts
+        if len(historical_contracts) > 10:
+            history_info.append(f"<em>... and {len(historical_contracts) - 10} more historical contracts</em>")
+        
+        return mark_safe("<br>".join(history_info))
+    contract_history_display.short_description = 'Contract History'
     
     # Custom actions
     def activate_employees(self, request, queryset):
