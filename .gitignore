@@ -17,3 +17,5 @@ atickets/old_tickets/*/data/*
 private_*.py
 
 identifyer
+
+db.sqlite3
