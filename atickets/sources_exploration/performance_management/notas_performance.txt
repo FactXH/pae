@@ -1,0 +1,85 @@
+
+
+
+
+
+
+
+
+1 Ha habido dos versiones de performance reviews 1 y 2 la 1 tira de surveys, la 2 tiene sus propias tablas.
+v1 se ha migrato luego me la sudan ls surveys.
+
+v2 go to.
+
+A) Score se saca se una final question. -> Respuesta de manager si va a la tabla con los scores.
+select * from performance_review_final_employee_scores where company_id = 1;
+
+_employee_scores
+
+
+
+15:48
+performance_review_final_employee_scores
+15:50
+Evaluation score -> performance_review_employee_scores  (self + manager)
+
+Employee final score -> performance_review_final_employee_scores (en el caso de factorial solo tenemos la del manager ya que decidimos darle este poder.)
+performance_revies_process_targets
+performance_revies_process
+
+Evaluation score -> performance_review_employee_scores
+
+
+
+15:50
+Employee final score -> performance_review_final_employee_scores
+15:53
+Employee en el contexto de una performance review
+performance_review_process_targets (empleado con process)
+performance_review_evaluations (cada evaluation relacionada con una combi de process-emplpoyee_target)
+
+
+
+
+
+
+
+
+2022
+
+
+
+    - Q4
+
+
+
+2023
+
+2024
+    - Q1
+
+    - Q2 Primera PR por Regina :)
+
+    - Q3 Segunda
+
+    - Q4 Primera vez con pregunta "default".
+
+2025
+    - Q1
+
+    - Q2
+
+    - Q3
+
+
+
+- PREGUNTA AUTOMÂTICA 
+
+
+
+
+
+
+
+- Johnson, Andrès, 
+

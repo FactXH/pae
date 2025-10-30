@@ -1,0 +1,10 @@
+boto3
+pandas
+numpy
+requests
+flask
+django
+sqlalchemy
+pytest
+matplotlib
+dbt-postgres

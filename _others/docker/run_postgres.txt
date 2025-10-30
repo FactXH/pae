@@ -1,0 +1,10 @@
+docker volume create pae_data
+
+docker run -d \
+  --name pae_postgres \
+  -e POSTGRES_DB=pae \
+  -e POSTGRES_USER=pae_usr \
+  -e POSTGRES_PASSWORD=pae_pwd \
+  -v pae_data:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  postgres
