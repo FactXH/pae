@@ -68,6 +68,5 @@ sources:
     - name: athena_performance_review_final_employee_scores
       description: "Raw table with final aggregated employee scores from performance reviews."
       
-
     - name: athena_performance_review_employee_scores
       description: "Raw table with granular employee score items from performance reviews."

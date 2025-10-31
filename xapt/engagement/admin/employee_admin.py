@@ -337,7 +337,9 @@ class EmployeeAdmin(BaseModelAdminMixin):
             manager_url = reverse('admin:engagement_employee_change', args=[relationship.manager.pk])
             manager_link = format_html('<a href="{}">{}</a>', manager_url, relationship.manager.full_name)
             
-            duration_info = f" (since {relationship.effective_from})"
+            # Use effective_from or fall back to created_at
+            start_date = relationship.effective_from or relationship.created_at.date()
+            duration_info = f" (since {start_date})"
             manager_info.append(f"👤 {manager_link}{duration_info}")
         
         return mark_safe("<br>".join(manager_info))
@@ -461,9 +463,10 @@ class EmployeeAdmin(BaseModelAdminMixin):
             # Format salary
             salary_display = f"${contract.salary_amount:,.2f}" if contract.salary_amount else "N/A"
             
-            # Format date range
+            # Format date range - use effective dates or fall back to created_at
+            start_date = contract.effective_from or contract.created_at.date()
             end_date = contract.effective_to or "ongoing"
-            duration_info = f" ({contract.effective_from} → {end_date})"
+            duration_info = f" ({start_date} → {end_date})"
             
             history_info.append(
                 f"📋 {role_link} - {salary_display}{duration_info} {contract_link}"

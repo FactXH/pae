@@ -505,4 +505,16 @@ from
 
 select * from slv_contracts where employee_id = '2343694';
 
-select * from slv_employees where employee_id = '2343694'
+select * from slv_employees where email like 'johns%';
+
+
+2306420
+2337028
+
+
+    select
+        pe.id as employee_id,
+        pe.access_id as employee_access_id,
+        pe.full_name as employee_full_name
+    from {{ ref("slv_employees") }} pe
+

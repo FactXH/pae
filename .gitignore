@@ -1,6 +1,8 @@
 .env
 
 _aprivate
+_adata
+
 logs
 
 __pycache__

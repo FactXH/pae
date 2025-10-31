@@ -385,14 +385,16 @@ def load_levels():
     loader.load_from_athena_custom_query(query, 'job_catalog_levels')
 
 def load_performace():
-    query = """
-    select * from data_lake_gold.factorial_employees_performance_scores 
-    """
-
     loader = Loader()
+
+    # performance_review_processes
+    # performance_review_process_targets
+    # performance_review_final_employee_scores
+    # performance_review_employee_scores
+    # performance_review_evaluations
+
     # loader.load_from_athena_custom_query(query, 'employees_performance_scores')
     tables = ['performance_review_processes', 'performance_review_process_targets', 'performance_review_evaluations', 'performance_review_final_employee_scores', 'performance_review_employee_scores']
-    tables = ['performance_review_employee_scores']
     for table in tables:
         loader.load_from_athena(table)
 
