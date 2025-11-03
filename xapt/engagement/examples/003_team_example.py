@@ -43,7 +43,7 @@ django.setup()
 # === IMPORT MODELS ===
 try:
     from utils.query_runner.query_runner import QueryRunner
-    from engagement.models import Employee, Team, TeamMembership, Role, Contract, Manager
+    from engagement.models import Employee, Team, TeamMembership, Role, Contract, Manager, PerformanceReview
     print("✅ Successfully imported Employee, Team, and TeamMembership models")
 except ImportError as e:
     print(f"❌ Failed to import: {e}")
@@ -105,7 +105,9 @@ def create_employees_with_query():
         first_name as first_name,
         last_name as last_name,
         email as email,
-        employee_id as factorial_id
+        employee_id as factorial_id,
+        onboarding_date,
+        offboarding_date
     FROM slv_employees
     """
     
@@ -117,7 +119,7 @@ def create_employees_with_query():
         query=employees_query,
         unique_fields=['email'],
         create_if_not_exists=True,
-        update_existing=False
+        update_existing=True
     )
     
     print(f"\n📊 Query Results:")
@@ -429,6 +431,68 @@ from
             continue
 
 
+def create_performance_reviews_with_query():
+    query = '''
+    select
+        performance_review_name,
+        employee_id,
+        performance_review_start_date,
+        manager_employee_id,
+        concat(self_employee_score_questionnaire_answered, '/', self_review_questionnaire_answered) as employee_answers,
+        concat(manager_employee_score_questionnaire_answered, '/', manager_review_questionnaire_answered) as manager_answers,
+        self_score,
+        manager_score,
+        final_employee_score,
+        final_score_calculated_at
+    from 
+        slv_performance_reviews
+    where
+        lower(performance_review_name) like 'perfo%'
+    '''
+
+    performance_reviews = PerformanceReview.objects.all().delete()
+
+    query_runner = QueryRunner()
+    result = query_runner.run_query(query, source='postgres', dataframe=True)
+
+    for _, row in result.iterrows():
+        # Convert row to dict to ensure we have clean Python values
+        row_dict = row.to_dict()
+        
+        # Find the employee
+        employee = Employee.objects.filter(factorial_id=row_dict['employee_id']).first()
+        manager = Employee.objects.filter(factorial_id=row_dict['manager_employee_id']).first()
+
+        if employee is None:
+            print(f"  ⚠️  Employee with factorial_id {row_dict['employee_id']} not found")
+            continue
+        if manager is None:
+            print(f"  ⚠️  Manager with factorial_id {row_dict['manager_employee_id']} not found")
+            continue
+
+        try:
+            review, created = PerformanceReview.objects.get_or_create(
+                employee=employee,
+                performance_name=row_dict['performance_review_name'],
+                performance_date=row_dict['performance_review_start_date'],
+                defaults={
+                    'self_questionary': row_dict['employee_answers'],
+                    'manager_questionary': row_dict['manager_answers'],
+                    'overall_score': row_dict['final_employee_score'],
+                    'manager': manager
+                }
+            )
+            
+            if created:
+                print(f"  ✅ Created performance review '{row_dict['performance_review_name']}' for {employee.full_name}")
+            else:
+                print(f"  ⏭️  Skipped existing performance review '{row_dict['performance_review_name']}' for {employee.full_name}")
+                
+        except Exception as e:
+            print(f"  ⚠️  Failed to create performance review for {employee.full_name}: {str(e)}")
+            print(f"     Continuing with next record...")
+            continue
+
 
 
 
@@ -442,7 +506,7 @@ def main():
         # Step 0: Clean up previous data
         # cleanup_previous_data()
         
-        # employees = create_employees_with_query()
+        employees = create_employees_with_query()
         
         # teams = create_teams_with_query()
         # set_parent_teams()
@@ -450,7 +514,8 @@ def main():
         # memberships = create_memberships_with_query()
         
         # roles = create_job_roles_with_query()
-        contracts = create_contracts_with_query()
+        # contracts = create_contracts_with_query()
+        # performance = create_performance_reviews_with_query()
 
         # managers = create_managers_with_query()
         # Step 5: Demonstrate functionality

@@ -8,6 +8,7 @@ from .team_admin import TeamAdmin, TeamMembershipAdmin
 from .role_admin import RoleAdmin
 from .contract_admin import ContractAdmin
 from .manager_admin import ManagerAdmin
+from .performance_review_admin import PerformanceReviewAdmin
 from .base_model_admin_mixin import BaseModelAdminMixin, BaseModelAdminExtended
 
 # Make sure Django admin site has custom branding
@@ -21,6 +22,6 @@ admin.site.index_title = 'Welcome to XAPT Administration'
 # Export all admin classes for easy importing
 __all__ = [
     'EmployeeAdmin', 'TeamAdmin', 'TeamMembershipAdmin',
-    'RoleAdmin', 'ContractAdmin', 'ManagerAdmin',
+    'RoleAdmin', 'ContractAdmin', 'ManagerAdmin', 'PerformanceReviewAdmin',
     'BaseModelAdminMixin', 'BaseModelAdminExtended'
 ]

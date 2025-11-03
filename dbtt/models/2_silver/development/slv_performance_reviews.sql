@@ -63,5 +63,3 @@ left join final_employee_scores fes
     on prpt.performance_review_process_target_id = fes.performance_review_process_target_id
 left join employees manager
     on manager.access_id = manager_pre.reviewer_access_id
-where e.employee_id = '2306420'
-

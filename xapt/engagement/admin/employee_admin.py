@@ -53,13 +53,14 @@ class EmployeeAdmin(BaseModelAdminMixin):
         'first_name', 'last_name', 'email'
     )
     
-    # Inherit base readonly fields and add team-related, manager-related, and contract display methods
+    # Inherit base readonly fields and add team-related, manager-related, contract, and performance review display methods
     readonly_fields = BaseModelAdminMixin.base_readonly_fields + (
         'full_name_display', 'is_manager_display', 'subordinates_count', 
         'subordinates_links', 'current_teams_display', 'team_history_display',
         'team_membership_summary', 'manager_relationship_summary', 
         'current_manager_display', 'manager_history_display',
-        'contract_summary', 'current_contracts_display', 'contract_history_display'
+        'contract_summary', 'current_contracts_display', 'contract_history_display',
+        'performance_review_summary', 'recent_reviews_display', 'review_history_display'
     )
     
     # Add team membership inline
@@ -70,6 +71,7 @@ class EmployeeAdmin(BaseModelAdminMixin):
         ('Personal Information', {
             'fields': (
                 ('first_name', 'last_name'), 
+                ('onboarding_date', 'offboarding_date'),
                 'email',
                 'full_name_display'
             )
@@ -103,6 +105,14 @@ class EmployeeAdmin(BaseModelAdminMixin):
                 'contract_summary',
                 'current_contracts_display',
                 'contract_history_display'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Performance Reviews', {
+            'fields': (
+                'performance_review_summary',
+                'recent_reviews_display',
+                'review_history_display'
             ),
             'classes': ('collapse',)
         }),
@@ -478,6 +488,104 @@ class EmployeeAdmin(BaseModelAdminMixin):
         
         return mark_safe("<br>".join(history_info))
     contract_history_display.short_description = 'Contract History'
+    
+    # Performance Review Display Methods
+    def performance_review_summary(self, obj):
+        """Display performance review summary statistics"""
+        from ..models import PerformanceReview
+        
+        all_reviews = PerformanceReview.objects.filter(employee=obj).order_by('-performance_date')
+        recent_reviews = all_reviews[:3]  # Last 3 reviews
+        
+        # Calculate average score
+        reviews_with_scores = [r for r in all_reviews if r.overall_score is not None]
+        avg_score = sum(r.overall_score for r in reviews_with_scores) / len(reviews_with_scores) if reviews_with_scores else None
+        
+        summary = []
+        summary.append(f"<strong>📊 Performance Review Summary:</strong>")
+        summary.append(f"• Total Reviews: {len(all_reviews)}")
+        if avg_score:
+            summary.append(f"• Average Score: <strong>{avg_score:.2f}</strong>")
+        summary.append(f"• Reviews with Scores: {len(reviews_with_scores)}")
+        
+        return mark_safe("<br>".join(summary))
+    performance_review_summary.short_description = 'Review Summary'
+    
+    def recent_reviews_display(self, obj):
+        """Display most recent performance reviews"""
+        from ..models import PerformanceReview
+        
+        recent_reviews = PerformanceReview.objects.filter(employee=obj).order_by('-performance_date')[:3]
+        
+        if not recent_reviews:
+            return mark_safe("<em>No performance reviews</em>")
+        
+        reviews_info = []
+        for review in recent_reviews:
+            # Create review link
+            review_url = reverse('admin:engagement_performancereview_change', args=[review.pk])
+            review_link = format_html('<a href="{}">{}</a>', review_url, review.performance_name)
+            
+            # Score badge
+            if review.overall_score is not None:
+                if review.overall_score >= 4:
+                    score_color = '#28a745'  # Green
+                elif review.overall_score >= 3:
+                    score_color = '#ffc107'  # Yellow
+                else:
+                    score_color = '#dc3545'  # Red
+                
+                score_badge = format_html(
+                    ' <span style="background-color: {}; color: white; padding: 1px 6px; '
+                    'border-radius: 3px; font-size: 10px; font-weight: bold;">{}</span>',
+                    score_color, review.overall_score
+                )
+            else:
+                score_badge = ""
+            
+            # Date info
+            date_info = f" ({review.performance_date})"
+            
+            reviews_info.append(f"⭐ {review_link}{score_badge}{date_info}")
+        
+        return mark_safe("<br>".join(reviews_info))
+    recent_reviews_display.short_description = 'Recent Reviews'
+    
+    def review_history_display(self, obj):
+        """Display full performance review history"""
+        from ..models import PerformanceReview
+        
+        all_reviews = PerformanceReview.objects.filter(employee=obj).order_by('-performance_date')
+        
+        if not all_reviews:
+            return mark_safe("<em>No performance review history</em>")
+        
+        # Skip the first 3 (already shown in recent_reviews_display)
+        older_reviews = all_reviews[3:13]  # Show up to 10 older reviews
+        
+        if not older_reviews:
+            return mark_safe("<em>All reviews shown above</em>")
+        
+        history_info = []
+        for review in older_reviews:
+            # Create review link
+            review_url = reverse('admin:engagement_performancereview_change', args=[review.pk])
+            review_link = format_html('<a href="{}">{}</a>', review_url, review.performance_name)
+            
+            # Score display (simple text for history)
+            score_text = f" - Score: {review.overall_score}" if review.overall_score is not None else ""
+            
+            # Date info
+            date_info = f" ({review.performance_date})"
+            
+            history_info.append(f"📋 {review_link}{score_text}{date_info}")
+        
+        # Add note if there are more reviews
+        if len(all_reviews) > 13:
+            history_info.append(f"<em>... and {len(all_reviews) - 13} more reviews</em>")
+        
+        return mark_safe("<br>".join(history_info))
+    review_history_display.short_description = 'Review History'
     
     # Custom actions
     def activate_employees(self, request, queryset):

@@ -20,8 +20,6 @@ import sys
 from datetime import date
 import django
 
-import pandas as pd
-
 # Set up the path to include both xapt project and PAE root
 current_dir = os.path.dirname(os.path.abspath(__file__))
 xapt_project_dir = os.path.abspath(os.path.join(current_dir, '..', '..'))
@@ -54,29 +52,20 @@ except ImportError as e:
 
 def main():
     """Main execution function"""
-    exporter = TairtableExporter()
-    # exporter.delete_everything()
     # exporter.delete_performance_reviews()
 
-    employee_results = []
-    performance_review_results = []
+    # client = AirtableClient()
+    # data = client.get_table_data_from_url(exporter.performance_review_table_url)
 
-    for employee in Employee.objects.all():
-        # if employee.email.startswith('xavier.hita') or employee.email.startswith('atti') or employee.email.startswith('albert.domi') or employee.email.startswith('xavier.vir'):
-        result = employee.post_or_update_to_airtable()
-        # employee.tair_id = None
-        # employee.save()
-        # result = employee.post_or_update_to_airtable()
-        print(result)
-        # employee_results.append(result)
-    for performance_review in PerformanceReview.objects.all():
-        performance_review.save()
-        result = performance_review.post_or_update_to_airtable()
-        print(result)
-    #     performance_review_results.append(result)
+    # breakpoint()
 
-    # pd.DataFrame(employee_results).to_csv('employee_airtable_results.csv', index=False)
-    # pd.DataFrame(performance_review_results).to_csv('performance_review_airtable_results.csv', index=False)
+    performances = PerformanceReview.objects.all()
+    
+    for performance in performances:
+        if performance.employee.email.startswith('xavier.hita'):
+            print(performance.return_self_questionarie_markdown())
+            print(performance.return_manager_questionarie_markdown())
+
 
 if __name__ == '__main__':
     main()

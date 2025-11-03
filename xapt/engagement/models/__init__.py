@@ -7,5 +7,6 @@ from .team import Team, TeamMembership
 from .role import Role
 from .contract import Contract
 from .manager import Manager
+from .performance_review import PerformanceReview
 
-__all__ = ['BaseModel', 'RelatedModel', 'Employee', 'Team', 'TeamMembership', 'Role', 'Contract', 'Manager']
+__all__ = ['BaseModel', 'RelatedModel', 'Employee', 'Team', 'TeamMembership', 'Role', 'Contract', 'Manager', 'PerformanceReview']

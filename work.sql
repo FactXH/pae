@@ -518,3 +518,71 @@ select * from slv_employees where email like 'johns%';
         pe.full_name as employee_full_name
     from {{ ref("slv_employees") }} pe
 
+
+
+;
+select *
+from slv_performance_reviews
+where employee_id = '2306420'
+;
+
+
+select 
+    performance_review_name,
+    employee_id,
+    performance_review_start_date,
+    manager_employee_id,
+    concat(self_employee_score_questionnaire_answered, '/', self_review_questionnaire_answered) as employee_answers,
+    concat(manager_employee_score_questionnaire_answered, '/', manager_review_questionnaire_answered) as manager_answers,
+    self_score,
+    manager_score,
+    final_employee_score,
+    final_score_calculated_at
+from slv_performance_reviews
+where lower(performance_review_name) like 'perfo%'
+;
+
+
+;
+select performance_review_name, performance_review_start_date, count(*) from slv_performance_reviews
+group by 1, 2 order by 3 desc
+;
+
+[
+    {"type":"section","uuid":"addf08ec-a8ec-54e5-b353-10c5683bd1fb","title":"Overall performance","metadata":{},"questions":[{"type":"answered_question","answer":
+    {"value":4,"comment":"Overall, Xavi's performance shows a mix of strong individual technical skills and areas needing development in teamwork and collaboration. He possesses significant technical capability, initiative, and resilience, demonstrated by the independent development of his data loading tool and his ability to overcome technical hurdles. This resulted in high efficiency in his individual tasks.\n\nHowever, his impact on the team was limited by a tendency towards autonomous work, challenges in collaborative integration, and communication that sometimes focused more on issues than collaborative solutions. 
+    There's a need for improvement in adhering to and improving team processes collaboratively, and fostering more effective teamwork. 
+    While his individual contributions are noted, growth in collaboration and process adherence is necessary to maximize his effectiveness within the team structure. 
+    His performance is valuable in its technical aspects but requires development in team integration and collaborative practices.\n"},"question":{"type":"question","uuid":"1eaa83bb-3375-5839-8416-f88f5fd3e972","label":{"manager":"How would you evaluate this person's performance during this review period?"},"scale":{"1":"Needs improvement","2":"Room for growth","3":"Meets expectations","4":"Exceeds expectations","5":"Outstanding"},"metadata":{},"mandatory":true,"answer_type":"rating","description":null,"with_comment":true}}]}]/
+    [{"type":"answered_question","answer":"Xavi joined with a clear set of goals outlined for his Data Engineer role, including developing and managing ETL pipelines, collaborating with analysts, integrating data sources, driving automation, overseeing migrations, and ensuring data integrity and performance. These goals are fundamental to the Data Engineer function and align directly with the company's need for efficient, reliable, and well-managed data infrastructure.
+    \n\nHowever, the operational reality of the team during this period presented challenges in directly pursuing all these goals collaboratively. Day-to-day tasks often revolved around specific data entry tickets. 
+    Xavi effectively adapted his focus towards executing his assigned tasks to the highest possible standard, embodying the principles of his role (efficiency, accuracy, control) within his immediate sphere of influence. ",
+    "question":{"type":"question","uuid":"8f7c0d69-e6ea-4313-9eee-cc31ddfea349","label":{"manager":"What were the main goals of your team member during this review period, and how did they align with their role and the team/company objectives?"},"metadata":{},"mandatory":true,"answer_type":"text","description":null}},
+    {"type":"answered_question","answer":"\t•\tDevelopment of the Data Loader/Migrator Tool: Confronted with inefficient and error-prone manual data entry processes lacking traceability and control, Xavi took significant personal initiative to design and build a comprehensive automation tool. This was done proactively and autonomously. The tool incorporates crucial elements like validation, error handling, and execution control. The direct impact is seen in Xavi's own work: his handling of data entry tickets is now significantly more efficient, controlled, faster, and demonstrably more accurate. While team adoption hasn't occurred yet, this tool represents a substantial improvement over previous methods and holds significant potential value for standardizing and improving data handling processes within the team. \t\n\t•\tExceptional Resilience and Professionalism: Xavi has demonstrated remarkable resilience and self-motivation in an environment he perceived as lacking clear direction and support. Instead of disengaging, he drew motivation from a desire to learn, improve, and contribute meaningfully to the company's long-term success. He maintained high professional standards for his own work despite observing different practices around him. This mindset is commendable and highly valuable.\nAdditionally, his willingness and ability to assist other departments (SQL, Product Support) on technical matters highlights his skills and collaborative spirit beyond the immediate team.\n","question":{"type":"question","uuid":"28789a98-3804-47b2-b0b2-0d5ddfb3eb77","label":{"manager":"What accomplishments from your team member are you most proud of during this period, and what impact did they have on your team or the company?"},"metadata":{},"mandatory":true,"answer_type":"text","description":null}},{"type":"answered_question","answer":"Looking back, navigating the initial ambiguity was challenging. Perhaps embracing full autonomy and taking ownership of his specific tasks and processes even earlier might have reduced some initial friction, although the learning curve in understanding the environment is acknowledged. Similarly, while attempts to engage with engineering support channels proved frustrating, developing alternative strategies earlier for navigating undocumented or buggy APIs (like the pattern recognition he eventually mastered) could have saved time.\nConcrete steps for continued growth include:\n\t•\tComplete and Formalize the Data Loader Tool: Finish developing the remaining modules and incorporate all planned mandatory features for robust code and ETL best practices. This solidifies a key contribution.\n \t•\tDocument and Showcase: Create clear documentation for the tool. Finding opportunities to formally showcase its capabilities and benefits (quantifying the efficiency/accuracy gains) could increase its visibility and potential for wider adoption, demonstrating leadership through innovation.\n \t•\tContinue Building Cross-Functional Relationships: Leverage the positive interactions with other departments to build a wider internal network, which can be beneficial for navigating complex issues and understanding broader company needs.\n \t•\tRefine Communication Strategies for Roadblocks: Continue developing effective ways to communicate technical challenges and dependencies, perhaps focusing on data-driven impact assessments when escalation or collaboration is required.\n \t•\tImprove Team Collaboration: While Xavi demonstrated strong individual capabilities, there were missed opportunities for deeper collaboration within the team. Building solutions autonomously, while technically impressive, meant the team couldn't provide input or benefit collectively during the development process. Moving forward, involving team members earlier, seeking collective input, and contributing to shared solutions rather than primarily individual ones would be beneficial.\n \t•\tConstructive Communication: While identifying issues is important, the way concerns are communicated matters. At times, feedback could be perceived more as complaints rather than constructive suggestions for improvement. Focusing on proposing solutions collaboratively and framing challenges in a way that encourages teamwork is a key area for development.\n \t•\tAdherence to Established Processes: While initiative is valued, it's also important to understand, utilize, and improve existing team processes before creating entirely separate ones. When processes are perceived as flawed, the ideal approach is to raise concerns constructively and work with the team to refine them, rather than bypassing them. Greater effort in understanding and respecting existing workflows, even while suggesting improvements, is needed.\n \t•\tSeek Guidance Within Team Structures: While self-sufficiency is a strength, relying more on team knowledge and established support channels, even when frustrating, is part of effective teamwork. Persisting in seeking help within the team structure and escalating appropriately through agreed channels is encouraged.\n","question":{"type":"question","uuid":"4d51e8e0-cd76-41ca-a769-505b21232cb3",
+"label":{"manager":"Looking back, what could your team member have done differently, and what concrete steps could they take to grow and improve in their role?"},"metadata":{},"mandatory":true,"answer_type":"text","description":null}}]
+
+
+
+;
+
+SELECT 
+    first_name as first_name,
+    last_name as last_name,
+    email as email,
+    employee_id as factorial_id,
+    onboarding_date,
+    offboarding_date
+FROM slv_employees;
+
+
+
+
+;
+select performance_name, count(*) from engagement_performancereview group by performance_name;
+
+;
+update engagement_performancereview
+set tair_id = null where 1 = 1
+
+;
+-- delete from engagement_performancereview where performance_name = 'Prformance Review Q2 Y23';

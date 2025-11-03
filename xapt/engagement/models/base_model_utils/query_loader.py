@@ -53,7 +53,7 @@ class QueryLoader:
     def load_instances_from_query(self, query: str, 
                                 field_mapping: Optional[Dict[str, str]] = None,
                                 create_if_not_exists: bool = True,
-                                update_existing: bool = False,
+                                update_existing: bool = True,
                                 unique_fields: List[str] = None) -> Dict[str, Any]:
         """
         Load model instances from a SQL query.

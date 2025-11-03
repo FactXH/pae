@@ -78,13 +78,15 @@ class AirtableClient:
                 current_dir = os.getcwd()
                 env_file = os.path.join(current_dir, '.env')
                 if os.path.exists(env_file):
-                    print(f"✅ Loaded environment from: {env_file}")
+                    # print(f"✅ Loaded environment from: {env_file}")
+                    pass
                 else:
                     # Check parent directory
                     parent_dir = os.path.dirname(current_dir)
                     parent_env_file = os.path.join(parent_dir, '.env')
                     if os.path.exists(parent_env_file):
-                        print(f"✅ Loaded environment from: {parent_env_file}")
+                        # print(f"✅ Loaded environment from: {parent_env_file}")
+                        pass
                     else:
                         print("📝 No .env file found in current or parent directory")
                         
@@ -174,7 +176,7 @@ class AirtableClient:
     
     def get_table_data(self, base_id: str, table_id: str, **kwargs) -> Dict[str, Any]:
         """
-        Get data from an Airtable table
+        Get data from an Airtable table with automatic pagination
         
         Args:
             base_id: Airtable base ID (e.g., 'app82aWzFKUVNZa3m')
@@ -182,12 +184,16 @@ class AirtableClient:
             **kwargs: Additional query parameters (maxRecords, pageSize, etc.)
             
         Returns:
-            dict: API response containing records and metadata
+            dict: API response containing all records and metadata
             
         Raises:
             ValueError: If client is not configured
             RuntimeError: If requests library is not available
             Exception: For API errors
+            
+        Note:
+            This method automatically handles pagination and returns all records.
+            If you want to limit the number of records, use the 'maxRecords' parameter.
         """
         
         if not self.is_configured:
@@ -202,12 +208,37 @@ class AirtableClient:
         # Get headers
         headers = self.get_headers()
         
-        # Make request
+        # Collect all records across pages
+        all_records = []
+        offset = None
+        
         try:
-            response = requests.get(api_url, headers=headers, params=kwargs)
-            response.raise_for_status()  # Raise exception for bad status codes
+            while True:
+                # Add offset to params if we have one
+                params = kwargs.copy()
+                if offset:
+                    params['offset'] = offset
+                
+                # Make request
+                response = requests.get(api_url, headers=headers, params=params)
+                response.raise_for_status()  # Raise exception for bad status codes
+                
+                data = response.json()
+                records = data.get('records', [])
+                all_records.extend(records)
+                
+                # Check if there are more pages
+                offset = data.get('offset')
+                if not offset:
+                    # No more pages
+                    break
+                
+                print(f"📄 Fetched {len(all_records)} records so far...")
             
-            return response.json()
+            # Return combined results
+            return {
+                'records': all_records
+            }
             
         except requests.exceptions.RequestException as e:
             raise Exception(f"Airtable API request failed: {str(e)}")
@@ -337,6 +368,213 @@ class AirtableClient:
         
         return self.get_table_dataframe(parsed['base_id'], parsed['table_id'], **kwargs)
 
+    def delete_all_records(self, table_url: str) -> None:
+        """
+        Delete all records from an Airtable table specified by its URL.
+        
+        Args:
+            table_url: Full Airtable table URL (e.g., https://airtable.com/app.../tbl...)   
+        Raises:
+            ValueError: If URL cannot be parsed or client is not configured
+            RuntimeError: If requests library is not available
+            Exception: For API errors
+        """
+        
+        if not self.is_configured:
+            raise ValueError("Airtable client not configured. Check your .env file or environment variables.")
+        
+        if not REQUESTS_AVAILABLE:
+            raise RuntimeError("requests library not available. Install with: pip install requests")
+        
+        # Parse the URL
+        parsed = self.parse_airtable_url(table_url)
+        
+        if not parsed['base_id'] or not parsed['table_id']:
+            raise ValueError(f"Could not parse Airtable URL: {table_url}")
+        
+        base_id = parsed['base_id']
+        table_id = parsed['table_id']
+        
+        # Get all records to delete
+        records_data = self.get_table_data(base_id, table_id, pageSize=100)
+        
+        records = records_data.get('records', [])
+        record_ids = [record['id'] for record in records]
+        
+        if not record_ids:
+            print("No records found to delete.")
+            return
+        
+        print(f"Deleting {len(record_ids)} records from table {table_id} in base {base_id}...")
+        
+        # Airtable API allows batch deletion of up to 10 records at a time
+        batch_size = 10
+        for i in range(0, len(record_ids), batch_size):
+            batch_ids = record_ids[i:i + batch_size]
+            
+            # Build URL with record IDs as query parameters
+            # Example: ?records[]=rec1&records[]=rec2
+            delete_url = f"https://api.airtable.com/v0/{base_id}/{table_id}"
+            record_params = '&'.join([f"records[]={rid}" for rid in batch_ids])
+            full_delete_url = f"{delete_url}?{record_params}"
+            
+            try:
+                response = requests.delete(full_delete_url, headers=self.get_headers())
+                response.raise_for_status()
+                print(f"✅ Deleted {len(batch_ids)} records")
+            except requests.exceptions.RequestException as e:
+                raise Exception(f"Failed to delete records: {str(e)}")
+
+    def get_record(self, table_url: str, record_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get a single record from an Airtable table by its record ID.
+        
+        Args:
+            table_url: Full Airtable table URL (e.g., https://airtable.com/app.../tbl...)
+            record_id: The ID of the record to retrieve
+
+        Returns:
+            Optional[Dict[str, Any]]: The record data if found, None otherwise
+        """
+        if not self.is_configured:
+            raise ValueError("Airtable client not configured. Check your .env file or environment variables.")
+
+        if not REQUESTS_AVAILABLE:
+            raise RuntimeError("requests library not available. Install with: pip install requests")
+
+        # Parse the URL
+        parsed = self.parse_airtable_url(table_url)
+
+        if not parsed['base_id'] or not parsed['table_id']:
+            raise ValueError(f"Could not parse Airtable URL: {table_url}")
+
+        base_id = parsed['base_id']
+        table_id = parsed['table_id']
+
+        # Make API request to get the record
+        url = f"https://api.airtable.com/v0/{base_id}/{table_id}/{record_id}"
+        try:
+            response = requests.get(url, headers=self.get_headers())
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to retrieve record: {str(e)}")
+
+    def create_record(self, table_url: str, fields: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Create a new record in an Airtable table.
+        
+        Args:
+            table_url: Full Airtable table URL (e.g., https://airtable.com/app.../tbl...)
+            fields: Dictionary of field names and values to create
+            
+        Returns:
+            Optional[Dict[str, Any]]: The created record data including the record ID
+            
+        Raises:
+            ValueError: If URL cannot be parsed or client is not configured
+            RuntimeError: If requests library is not available
+            Exception: For API errors
+            
+        Example:
+            fields = {
+                "first_name": "John",
+                "last_name": "Doe",
+                "email": "john.doe@example.com"
+            }
+            record = client.create_record(table_url, fields)
+            print(f"Created record with ID: {record['id']}")
+        """
+        
+        if not self.is_configured:
+            raise ValueError("Airtable client not configured. Check your .env file or environment variables.")
+        
+        if not REQUESTS_AVAILABLE:
+            raise RuntimeError("requests library not available. Install with: pip install requests")
+        
+        # Parse the URL
+        parsed = self.parse_airtable_url(table_url)
+        
+        if not parsed['base_id'] or not parsed['table_id']:
+            raise ValueError(f"Could not parse Airtable URL: {table_url}")
+        
+        base_id = parsed['base_id']
+        table_id = parsed['table_id']
+        
+        # Build API URL
+        api_url = f"https://api.airtable.com/v0/{base_id}/{table_id}"
+        
+        # Prepare payload
+        payload = {
+            "records": [
+                {
+                    "fields": fields
+                }
+            ]
+        }
+
+        print(f"Creating record with fields: {fields}")
+
+        # Make API request
+        try:
+            response = requests.post(api_url, headers=self.get_headers(), json=payload)
+            response.raise_for_status()
+            result = response.json()
+            records = result.get('records', [])
+            if records:
+                return records[0]
+            return None
+            
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to create record: {str(e)}")
+
+    def update_record(self, table_url: str, record_id: str, fields: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Update an existing record in an Airtable table.
+        
+        Args:
+            table_url: Full Airtable table URL (e.g., https://airtable.com/app.../tbl...)
+            record_id: The ID of the record to update
+            fields: Dictionary of field names and values to update
+        Returns:
+            Optional[Dict[str, Any]]: The updated record data including the record ID
+        Raises:
+            ValueError: If URL cannot be parsed or client is not configured
+            RuntimeError: If requests library is not available
+            Exception: For API errors
+        """
+        
+        if not self.is_configured:
+            raise ValueError("Airtable client not configured. Check your .env file or environment variables.")
+        
+        if not REQUESTS_AVAILABLE:
+            raise RuntimeError("requests library not available. Install with: pip install requests")
+        
+        # Parse the URL
+        parsed = self.parse_airtable_url(table_url)
+        
+        if not parsed['base_id'] or not parsed['table_id']:
+            raise ValueError(f"Could not parse Airtable URL: {table_url}")
+        
+        base_id = parsed['base_id']
+        table_id = parsed['table_id']
+        
+        # Build API URL
+        api_url = f"https://api.airtable.com/v0/{base_id}/{table_id}/{record_id}"
+        
+        # Prepare payload
+        payload = {
+            "fields": fields
+        }
+        
+        # Make API request
+        try:
+            response = requests.patch(api_url, headers=self.get_headers(), json=payload)
+            response.raise_for_status()
+            return response.json()
+            
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to update record: {str(e)}")
 
 # Example usage and testing
 if __name__ == '__main__':
