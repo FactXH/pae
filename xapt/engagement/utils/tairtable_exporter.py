@@ -63,6 +63,7 @@ class TairtableExporter:
         fields = {
             "name": review.employee.full_name + ' ' + review.performance_name,
             "manager_score": review.overall_score,
+            "self_score": review.self_score,
             "own_questionary": review.return_self_questionarie_markdown(),
             "manager_questionary": review.return_manager_questionarie_markdown(),
             "employees": [review.employee.tair_id],
@@ -90,6 +91,7 @@ class TairtableExporter:
         fields = {
             "name": review.employee.full_name + ' ' + review.performance_name,
             "manager_score": review.overall_score,
+            "self_score": review.self_score,
             "own_questionary": review.return_self_questionarie_markdown(),
             "manager_questionary": review.return_manager_questionarie_markdown(),
             "employees": [review.employee.tair_id]

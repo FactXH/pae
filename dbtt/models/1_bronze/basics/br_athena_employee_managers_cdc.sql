@@ -1,3 +1,5 @@
+-- TODO: CHANGE TO SILVER LAYER
+
 with source_employees as (
     select 
         id as employee_id,

@@ -20,6 +20,7 @@ python3 003_team_example.py
 import os
 import sys
 from datetime import date, datetime, timedelta
+import pandas as pd
 
 # === PATH SETUP ===
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -471,14 +472,23 @@ def create_performance_reviews_with_query():
             continue
 
         try:
-            review, created = PerformanceReview.objects.get_or_create(
+            self_score = row_dict['self_score']
+            manager_score = row_dict['final_employee_score']
+
+            if pd.isna(self_score):
+                self_score = None
+            if pd.isna(manager_score):
+                manager_score = None
+
+            review, created = PerformanceReview.objects.update_or_create(
                 employee=employee,
                 performance_name=row_dict['performance_review_name'],
                 performance_date=row_dict['performance_review_start_date'],
                 defaults={
                     'self_questionary': row_dict['employee_answers'],
                     'manager_questionary': row_dict['manager_answers'],
-                    'overall_score': row_dict['final_employee_score'],
+                    'overall_score': manager_score,
+                    'self_score': self_score,
                     'manager': manager
                 }
             )
@@ -486,7 +496,7 @@ def create_performance_reviews_with_query():
             if created:
                 print(f"  ✅ Created performance review '{row_dict['performance_review_name']}' for {employee.full_name}")
             else:
-                print(f"  ⏭️  Skipped existing performance review '{row_dict['performance_review_name']}' for {employee.full_name}")
+                print(f"  ⏭️  Updated existing performance review '{row_dict['performance_review_name']}' for {employee.full_name}")
                 
         except Exception as e:
             print(f"  ⚠️  Failed to create performance review for {employee.full_name}: {str(e)}")
@@ -506,7 +516,7 @@ def main():
         # Step 0: Clean up previous data
         # cleanup_previous_data()
         
-        employees = create_employees_with_query()
+        # employees = create_employees_with_query()
         
         # teams = create_teams_with_query()
         # set_parent_teams()
@@ -515,7 +525,7 @@ def main():
         
         # roles = create_job_roles_with_query()
         # contracts = create_contracts_with_query()
-        # performance = create_performance_reviews_with_query()
+        performance = create_performance_reviews_with_query()
 
         # managers = create_managers_with_query()
         # Step 5: Demonstrate functionality

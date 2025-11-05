@@ -578,11 +578,20 @@ FROM slv_employees;
 
 
 ;
-select performance_name, count(*) from engagement_performancereview group by performance_name;
+select performance_name, count(*) from engagement_performancereview 
+where self_score is not null 
+group by performance_name;
 
 ;
 update engagement_performancereview
 set tair_id = null where 1 = 1
 
 ;
--- delete from engagement_performancereview where performance_name = 'Prformance Review Q2 Y23';
+
+
+
+delete from engagement_performancereview where performance_name in
+(select distinct performance_name from engagement_performancereview
+ group by performance_name
+ having count(*) < 600
+)

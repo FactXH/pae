@@ -61,15 +61,15 @@ def main():
     employee_results = []
     performance_review_results = []
 
-    for employee in Employee.objects.all():
-        # if employee.email.startswith('xavier.hita') or employee.email.startswith('atti') or employee.email.startswith('albert.domi') or employee.email.startswith('xavier.vir'):
-        result = employee.post_or_update_to_airtable()
-        # employee.tair_id = None
-        # employee.save()
-        # result = employee.post_or_update_to_airtable()
-        print(result)
+    # for employee in Employee.objects.all():
+    #     # if employee.email.startswith('xavier.hita') or employee.email.startswith('atti') or employee.email.startswith('albert.domi') or employee.email.startswith('xavier.vir'):
+    #     result = employee.post_or_update_to_airtable()
+    #     # employee.tair_id = None
+    #     # employee.save()
+    #     # result = employee.post_or_update_to_airtable()
+    #     print(result)
         # employee_results.append(result)
-    for performance_review in PerformanceReview.objects.all():
+    for performance_review in PerformanceReview.objects.filter(tair_id__isnull=True):
         performance_review.save()
         result = performance_review.post_or_update_to_airtable()
         print(result)

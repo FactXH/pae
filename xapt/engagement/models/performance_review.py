@@ -34,6 +34,12 @@ class PerformanceReview(BaseModel):
         help_text="Date of the performance review"
     )
 
+    self_score = models.PositiveIntegerField(
+        help_text="Score given by the employee in self-assessment",
+        null=True,
+        blank=True
+    )
+
     overall_score = models.PositiveIntegerField(
         help_text="Score given during the performance review",
         null=True,
