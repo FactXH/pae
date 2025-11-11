@@ -45,6 +45,12 @@ sources:
       - name: file_hiring_process_2025
         description: "Uploaded file containing hiring process 2025 data from airtable."
 
+      - name: file_hiring_process_2023
+        description: "Uploaded file containing hiring process 2023 data from airtable."
+
+      - name: file_hiring_process_2022
+        description: "Uploaded file containing hiring process 2022 data from airtable."
+
       - name: file_offer_letters
         description: "Uploaded file containing offer letters data from airtable."
 
@@ -70,3 +76,29 @@ sources:
       
     - name: athena_performance_review_employee_scores
       description: "Raw table with granular employee score items from performance reviews."
+
+  
+  - name: athena_ats
+    database: pae
+    schema: public
+    tables:
+      - name: athena_ats_applications
+        description: "Raw table containing ATS applications data imported into Athena."
+
+      - name: athena_ats_candidates
+        description: "Raw table containing ATS candidates data imported into Athena."
+
+      - name: athena_ats_job_postings
+        description: "Raw table containing ATS jobs data imported into Athena."
+
+      - name: athena_ats_application_phases
+        description: "Raw table containing ATS application phases data imported into Athena."
+
+      - name: athena_ats_hiring_stages
+        description: "Raw table containing ATS hiring stages data imported into Athena."
+
+      - name: athena_ats_offer_letters
+        description: "Raw table containing ATS offer letters data imported into Athena."
+
+      - name: athena_ats_candidate_sources
+        description: "Raw table containing ATS candidate sources data imported into Athena."

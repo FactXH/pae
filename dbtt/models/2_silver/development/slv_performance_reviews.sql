@@ -22,7 +22,7 @@ employees as (
     select
         employee_id,
         access_id
-    from {{ ref("slv_employees") }} pe
+    from {{ ref("dim_employees") }} pe
 )
 
 select

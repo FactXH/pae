@@ -1,2 +1,1 @@
-
-select * from {{ref performance_reviews_evaluations
+select * from {{ ref("dim_job_catalog")}}

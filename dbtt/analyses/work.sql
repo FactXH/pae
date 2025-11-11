@@ -133,7 +133,7 @@ select distinct talent_specialist;
 
 
 
-select employee_id from slv_employees where email = 'xavier.hita@factorial.co';
+select employee_id from dim_employees where email = 'xavier.hita@factorial.co';
 
 select * from athena_employees limit 10;
 select * from athena_airtable_people_todo limit 10;
@@ -171,12 +171,12 @@ select
     man.effective_to,
     man.is_current
 from br_athena_employee_managers_cdc man
-left join slv_employees emp on emp.employee_id = man.employee_id
-left join slv_employees manager on manager.employee_id = man.manager_id
+left join dim_employees emp on emp.employee_id = man.employee_id
+left join dim_employees manager on manager.employee_id = man.manager_id
 where man.employee_id = '2539855' order by man.effective_from;
 
 
-select * from slv_employees where email
+select * from dim_employees where email
 like 'tania.gon%';
 
 
@@ -187,7 +187,7 @@ SELECT
     team_name,
     team_level as level,
     team_type as nature
-from slv_teams
+from dim_teams
     where team_name like 'CX%'
 ;
 
@@ -195,7 +195,7 @@ from slv_teams
 select
         team_id as factorial_id,
         parent_team_id as factorial_parent_team_id
-    from slv_teams
+    from dim_teams
     where parent_team_id is not null;
 
 
@@ -205,5 +205,5 @@ select
     is_lead as is_lead,
     effective_from as effective_from,
     effective_to as effective_to
-from slv_memberships_cdc
+from dim_memberships_cdc
 ;

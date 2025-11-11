@@ -489,7 +489,7 @@ class Employee(BaseModel):
                 new_tair_id = exporter._export_employee(self)
             
             else:
-                exporter._update_employee(self)
+                exporter._update_employee_v2(self)
                 new_tair_id = self.tair_id
             
             return {

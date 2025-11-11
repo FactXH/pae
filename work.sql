@@ -21,7 +21,7 @@ order by 2 desc
 
 ;
 
-select effective_date, count(*) from slv_contracts
+select effective_date, count(*) from dim_contracts
 group by effective_date
 
 
@@ -442,11 +442,11 @@ group BY team.name
 
 ;
     SELECT *
-    from slv_job_catalog
+    from dim_job_catalog
     where job_catalog_level_id is not null
 ;
 
-select * from slv_employees where first_name like 'Xavier%'
+select * from dim_employees where first_name like 'Xavier%'
 
 ;
 select * from br_athena_job_catalog_levels;
@@ -471,7 +471,7 @@ from br_athena_employee_managers_cdc;
         level_name,
         role_name,
         role_level_name
-    from slv_job_catalog;
+    from dim_job_catalog;
 
 
 
@@ -481,7 +481,7 @@ from br_athena_employee_managers_cdc;
 
 select column_name, data_type
 from information_schema.columns
-where table_name = 'slv_contracts';
+where table_name = 'dim_contracts';
 
     select
         contract_id as contract_factorial_id,
@@ -492,7 +492,7 @@ where table_name = 'slv_contracts';
         salary_amount,
         job_catalog_level_id as job_catalog_level_factorial_id
 
-    from slv_contracts;
+    from dim_contracts;
 ;
 
 select
@@ -503,9 +503,9 @@ select
 from
     br_athena_employee_managers_cdc;
 
-select * from slv_contracts where employee_id = '2343694';
+select * from dim_contracts where employee_id = '2343694';
 
-select * from slv_employees where email like 'johns%';
+select * from dim_employees where email like 'johns%';
 
 
 2306420
@@ -516,7 +516,7 @@ select * from slv_employees where email like 'johns%';
         pe.id as employee_id,
         pe.access_id as employee_access_id,
         pe.full_name as employee_full_name
-    from {{ ref("slv_employees") }} pe
+    from {{ ref("dim_employees") }} pe
 
 
 
@@ -572,7 +572,7 @@ SELECT
     employee_id as factorial_id,
     onboarding_date,
     offboarding_date
-FROM slv_employees;
+FROM dim_employees;
 
 
 
@@ -594,4 +594,76 @@ delete from engagement_performancereview where performance_name in
 (select distinct performance_name from engagement_performancereview
  group by performance_name
  having count(*) < 600
-)
+);
+
+
+;
+select * from athena_ats_candidates_dedup where lower(last_name) = 'hita';
+select * from athena_ats_candidates_dedup where lower(first_name) = 'rocio';
+
+
+-- 7835555
+;
+select * from athena_ats_applications_dedup where ats_candidate_id = '7835555';
+select * from athena_ats_rejection_reasons_dedup where id = '1511'
+
+;
+select * from file_hiring_process_2025 where new_hire_name like 'Xav%';
+
+
+;
+
+;
+select * from 
+athena_ats_job_postings_dedup where id in ('239848', '256440')
+
+
+
+
+
+select * from dim_teams;;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------
+--------------------------------------------------------------------------------------------------------------------------------------------
+-- CREATE SOURCES
+;
+
+create table athena_ats_job_postings as 
+select 1;
+
+drop table athena_ats_offer_letters;
+create  table athena_ats_offer_letters as 
+select 1;
+
+create table athena_ats_applications as
+select 1;
+
+create table athena_ats_application_phases as
+select 1;
+
+create table athena_ats_hiring_stages as
+select 1;
+
+create table athena_sources as 
+select 1;
+
+create table athena_ats_candidates as 
+select 1;
+
+create table athena_ats_candidate_sources as
+select 1;

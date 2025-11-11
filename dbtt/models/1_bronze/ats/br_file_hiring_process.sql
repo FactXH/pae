@@ -8,6 +8,16 @@ hp_2024 as (
     from {{ source('files', "file_hiring_process_2024") }}
 )
 
+-- hp_2023 as (
+--     select *
+--     from {{ source('files', "file_hiring_process_2023") }}
+-- ),
+
+-- hp_2022 as (
+--     select *
+--     from {{ source('files', "file_hiring_process_2022") }}
+-- )
+
 select name AS hiring_process_role,
     seniority,
     opened_on as text_opened_on,

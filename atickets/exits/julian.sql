@@ -46,6 +46,10 @@ select
     STRING_AGG("compensation_comments", ' - '),
     STRING_AGG("comment_reasons_for_leaving", ' - '),
 
+    SUM(CASE WHEN compensation != '' THEN 1 ELSE 0 END) as count_compensation,
+    AVG(CASE WHEN compensation != '' THEN CAST(compensation AS FLOAT) ELSE NULL END) as average_compensation,
+    VARIANCE(CASE WHEN compensation != '' THEN CAST(compensation AS FLOAT) ELSE NULL END) as variance_compensation,
+
 
     SUM(CASE WHEN compensation != '' THEN 1 ELSE 0 END) as count_compensation,
     AVG(CASE WHEN compensation != '' THEN CAST(compensation AS FLOAT) ELSE NULL END) as average_compensation,
@@ -62,8 +66,6 @@ select
     "afterworks_&_rituals"
     rate_overall_culture
     professional_development
-
-
 
 
 
@@ -158,7 +160,11 @@ having count(*) > 3
 
         SUM(CASE WHEN professional_development != '' THEN 1 ELSE 0 END) AS count_professional_development,
         AVG(CASE WHEN professional_development != '' THEN CAST(professional_development AS FLOAT) ELSE NULL END) AS average_professional_development,
-        VARIANCE(CASE WHEN professional_development != '' THEN CAST(professional_development AS FLOAT) ELSE NULL END) AS variance_professional_development
+        VARIANCE(CASE WHEN professional_development != '' THEN CAST(professional_development AS FLOAT) ELSE NULL END) AS variance_professional_development,
+
+        SUM(CASE WHEN "transparency_&_communication" != '' THEN 1 ELSE 0 END) AS count_transparency,
+        AVG(CASE WHEN "transparency_&_communication" != '' THEN CAST("transparency_&_communication" AS FLOAT) ELSE NULL END) AS average_transparency,
+        VARIANCE(CASE WHEN "transparency_&_communication" != '' THEN CAST("transparency_&_communication" AS FLOAT) ELSE NULL END) AS variance_transparency
 
 
     FROM athena_airtable_people_todo emp
@@ -170,6 +176,36 @@ having count(*) > 3
 -- RESONS OF LEAVING
 
 ;
+
+    SELECT 
+        team_name, 
+        memb.market,
+        EXTRACT(YEAR FROM CAST(fecha_offboarding AS DATE)) AS offboarding_year,
+        COUNT(*) AS total_empleados,
+
+
+        SUM(CASE WHEN "transparency_&_communication" != '' THEN 1 ELSE 0 END) AS count_transparency,
+        AVG(CASE WHEN "transparency_&_communication" != '' THEN CAST("transparency_&_communication" AS FLOAT) ELSE NULL END) AS average_transparency,
+        VARIANCE(CASE WHEN "transparency_&_communication" != '' THEN CAST("transparency_&_communication" AS FLOAT) ELSE NULL END) AS variance_transparency,
+
+        string_agg(emp.email, ' - ') as emails
+
+    FROM athena_airtable_people_todo emp
+    LEFT JOIN employee_memberships memb ON emp.id_empleado = memb.employee_id
+    WHERE fecha_offboarding IS NOT NULL AND fecha_offboarding != ''
+    and team_name like '%Entry'
+    GROUP BY team_name, offboarding_year, memb.market
+
+;
+
+
+
+select column_name
+from information_schema.columns
+where table_schema = 'public'
+and table_name = 'athena_airtable_people_todo';
+
+
 -- MAIN QUERY JULIAN
     SELECT 
         team_name, 
@@ -235,3 +271,13 @@ SELECT
 FROM base_data
 GROUP BY team_name, market, offboarding_year
 ORDER BY team_name, market, offboarding_year;
+
+
+
+
+select 
+
+
+
+from athena_airtable_people_todo 
+left join employee_memberships memb on athena_airtable_people_todo.id_empleado = memb.employee_id

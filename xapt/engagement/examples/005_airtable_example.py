@@ -61,19 +61,23 @@ def main():
     employee_results = []
     performance_review_results = []
 
-    # for employee in Employee.objects.all():
-    #     # if employee.email.startswith('xavier.hita') or employee.email.startswith('atti') or employee.email.startswith('albert.domi') or employee.email.startswith('xavier.vir'):
-    #     result = employee.post_or_update_to_airtable()
-    #     # employee.tair_id = None
-    #     # employee.save()
-    #     # result = employee.post_or_update_to_airtable()
-    #     print(result)
-        # employee_results.append(result)
-    for performance_review in PerformanceReview.objects.filter(tair_id__isnull=True):
-        performance_review.save()
-        result = performance_review.post_or_update_to_airtable()
+    for employee in Employee.objects.all():
+        # if employee.email.startswith('xavier.hita') or employee.email.startswith('atti') or employee.email.startswith('albert.domi') or employee.email.startswith('xavier.vir'):
+        # if employee.offboarding_date is not None:
+        #     continue  # Skip offboarded employees
+        result = employee.post_or_update_to_airtable()
+        # employee.tair_id = None
+        # employee.save()
+        # result = employee.post_or_update_to_airtable()
         print(result)
-    #     performance_review_results.append(result)
+        # employee_results.append(result)
+
+
+    # for performance_review in PerformanceReview.objects.filter(tair_id__isnull=True):
+    #     performance_review.save()
+    #     result = performance_review.post_or_update_to_airtable()
+    #     print(result)
+    # #     performance_review_results.append(result)
 
     # pd.DataFrame(employee_results).to_csv('employee_airtable_results.csv', index=False)
     # pd.DataFrame(performance_review_results).to_csv('performance_review_airtable_results.csv', index=False)

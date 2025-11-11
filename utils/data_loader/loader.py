@@ -50,17 +50,17 @@ class Loader:
                 df.to_sql(table_name_sheet, engine, if_exists='replace', index=False)
                 print(f"Data from sheet '{sheet_name}' loaded into table '{table_name_sheet}' successfully.")
 
-    def load_from_athena(self, table_name):
+    def load_from_athena(self, table_name, dedup = False):
         print(f"Loading table: {table_name}")
         query_builder = QueryBuilder()
-        query = query_builder.build_simple_extraction_query(table_name, 1)
+        query = query_builder.build_simple_extraction_query(table_name, 1, dedup=dedup)
         df = query_athena(query)
         if '.' in table_name:
             if 'gold' in table_name:
                 database = 'gold'
             table_name = table_name.split('.')[-1] + '_' + database
         else:
-            table_name = f"athena_{table_name}"
+            table_name = f"athena_{table_name}" + "_dedup" if dedup else f"athena_{table_name}"
 
         df = df.applymap(lambda x: x.replace('\x00', '') if isinstance(x, str) else x)
         df.to_sql(table_name, self.get_sqlalchemy_engine(), if_exists='replace', index=False)

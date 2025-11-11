@@ -6,7 +6,7 @@ employees as (
     select
         email,
         concat(first_name, ' ', last_name) as employee_name
-    from {{ ref("slv_employees") }}
+    from {{ ref("dim_employees") }}
 ),
 
 result as (

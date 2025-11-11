@@ -139,8 +139,44 @@ class TairtableExporter:
             "full_name": employee.full_name,
             "employee_info": employee.get_all_info_markdown(),
             "onboarding_date": employee.onboarding_date.isoformat() if employee.onboarding_date else None,
-            "offboarding_date": employee.offboarding_date.isoformat() if employee.offboarding_date else None
+            "offboarding_date": employee.offboarding_date.isoformat() if employee.offboarding_date else None,
         }
         
+        self.tair_client.update_record(self.employee_table_url, employee.tair_id, employee_data)
+        print(f"🔄 Updated {employee.full_name} in Tairtable.")
+
+    
+    def _update_employee_v2(self, employee: Employee):
+        """
+        Update an existing employee record in Tairtable.
+        """
+        if not employee.tair_id:
+            print(f"Employee {employee.full_name} does not have a tair_id. Cannot update.")
+            return
+        
+        employee_data = {
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "email": employee.email,
+            "full_name": employee.full_name,
+            "employee_info": employee.get_all_info_markdown(),
+            "onboarding_date": employee.onboarding_date.isoformat() if employee.onboarding_date else None,
+            "offboarding_date": employee.offboarding_date.isoformat() if employee.offboarding_date else None,
+        }
+        
+        q3y25pr = PerformanceReview.objects.filter(employee=employee, performance_name__icontains='Q3Y25').first()
+        q2y25pr = PerformanceReview.objects.filter(employee=employee, performance_name__icontains='Q2Y25').first()
+        q1y25pr = PerformanceReview.objects.filter(employee=employee, performance_name__icontains='Q1Y25').first()
+        q4y24pr = PerformanceReview.objects.filter(employee=employee, performance_name__icontains='Q4Y24').first()
+
+        if q3y25pr:
+            employee_data["Q3_Y2025"] = q3y25pr.overall_score
+        if q2y25pr:
+            employee_data["Q2_Y2025"] = q2y25pr.overall_score
+        if q1y25pr:
+            employee_data["Q1_Y2025"] = q1y25pr.overall_score
+        if q4y24pr:
+            employee_data["Q4_Y2024"] = q4y24pr.overall_score
+
         self.tair_client.update_record(self.employee_table_url, employee.tair_id, employee_data)
         print(f"🔄 Updated {employee.full_name} in Tairtable.")

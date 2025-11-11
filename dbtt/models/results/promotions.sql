@@ -19,7 +19,7 @@ contracts_2025 as (
     select
         *
     from 
-        {{ ref("slv_contracts") }}
+        {{ ref("dim_contracts") }}
     where 
         (effective_date <= '2025-10-15' and (effective_to_date is null or effective_to_date >= '2025-01-01'))
 ),
@@ -69,7 +69,7 @@ group by
 select
     employee_id,
     string_agg(regexp_replace(cast(salary_amount as text), '\.?0+$', ''), ' - ') as all_salaries
-from slv_contracts
+from dim_contracts
 where effective_date >= '2025-01-01'
 group by employee_id
 
@@ -80,7 +80,7 @@ with salary_role_changes_2025 as (
         count(distinct salary_amount) as nr_salary_changes,
         count(distinct job_catalog_level_id) as nr_role_changes,
         least(count(distinct salary_amount), count(distinct job_catalog_level_id)) as min_changes
-    from slv_contracts
+    from dim_contracts
     where effective_date >= '2025-01-01'
     and start_date <= '2025-01-01'
     and effective_date != '2024-07-01'

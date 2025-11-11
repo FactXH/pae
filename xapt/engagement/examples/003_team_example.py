@@ -109,7 +109,7 @@ def create_employees_with_query():
         employee_id as factorial_id,
         onboarding_date,
         offboarding_date
-    FROM slv_employees
+    FROM dim_employees
     """
     
     print("📝 Using SQL UNION query to create all employees at once")
@@ -155,7 +155,7 @@ def create_teams_with_query():
         team_name,
         team_level as level,
         team_type as nature
-    from slv_teams
+    from dim_teams
     """
     
     print("📝 Step 1: Creating root teams (Engineering & European Market)")
@@ -186,7 +186,7 @@ def create_job_roles_with_query():
         level_name,
         role_name,
         role_level_name
-    from slv_job_catalog
+    from dim_job_catalog
     """
     
     print("🔧 Executing Role.load_from_query()...")
@@ -219,7 +219,7 @@ def set_parent_teams():
     SELECT
         team_id as factorial_id,
         parent_team_id as factorial_parent_team_id
-    from slv_teams
+    from dim_teams
     where parent_team_id is not null
     """
     
@@ -266,7 +266,7 @@ def create_memberships_with_query():
             is_lead as is_lead,
             effective_from as effective_from,
             effective_to as effective_to
-        from slv_memberships_cdc        
+        from dim_memberships_cdc        
         """
 
         query_runner = QueryRunner()
@@ -337,7 +337,7 @@ def create_contracts_with_query():
         salary_amount,
         job_catalog_level_id as job_catalog_level_factorial_id
 
-    from slv_contracts
+    from dim_contracts
     """
 
     delete_contracts = Contract.objects.all().delete()

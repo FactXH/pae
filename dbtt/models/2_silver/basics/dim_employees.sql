@@ -32,9 +32,9 @@ contracts_enriched as (
         contract_rank,
         is_last_contract
     from
-        {{ ref("slv_contracts") }} cont
+        {{ ref("dim_contracts") }} cont
     left join
-        {{ ref("slv_job_catalog") }} job_catalog
+        {{ ref("dim_job_catalog") }} job_catalog
     ON job_catalog.job_catalog_level_id = cont.job_catalog_level_id
 ),
 
@@ -44,9 +44,9 @@ contracts_aggregated as (
         string_agg(job_catalog.role_level_name, ' / ') as all_roles,
         string_agg(cast(cont.salary_amount as text), ' - ') as all_salaries,
         count(*) as nr_contracts
-    from {{ ref("slv_contracts") }} cont
+    from {{ ref("dim_contracts") }} cont
     left join
-        {{ ref("slv_job_catalog") }} job_catalog
+        {{ ref("dim_job_catalog") }} job_catalog
     ON job_catalog.job_catalog_level_id = cont.job_catalog_level_id
     group by 1
 )
