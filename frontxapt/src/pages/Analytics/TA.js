@@ -4,6 +4,7 @@ import ForecastTA from '../../components/ForecastTA';
 import ApplicationPipeline from '../../components/ApplicationPipeline';
 import PipelineStatus from '../../components/PipelineStatus';
 import HireQuality from '../../components/HireQuality';
+import TAFilters from '../../components/TAFilters';
 import './TA.css';
 
 function TA() {
@@ -11,18 +12,18 @@ function TA() {
   
   // Sample data - replace with actual data from API
   const forecastData = [
-    { month: 'Jan 2025', forecast: 125, hires: 16, turnovers: 30 },
-    { month: 'Feb 2025', forecast: 130, hires: 45, turnovers: 15 },
-    { month: 'Mar 2025', forecast: 135, hires: 7, turnovers: 2 },
-    { month: 'Apr 2025', forecast: 140, hires: 5, turnovers: 0 },
-    { month: 'May 2025', forecast: 145, hires: 8, turnovers: 3 },
-    { month: 'Jun 2025', forecast: 150, hires: 6, turnovers: 1 },
-    { month: 'Jul 2025', forecast: 155, hires: 7, turnovers: 2 },
-    { month: 'Aug 2025', forecast: 160, hires: 5, turnovers: 0 },
-    { month: 'Sep 2025', forecast: 175, hires: 8, turnovers: 3 },
-    { month: 'Oct 2025', forecast: 170, hires: 6, turnovers: 1 },
-    { month: 'Nov 2025', forecast: 175, hires: 7, turnovers: 2 },
-    { month: 'Dec 2025', forecast: 180, hires: 5, turnovers: 15 },
+    { month: 'Mid Jan 2025', forecast: 125, hires: 28, turnovers: 10 },    // Huge turnover mid-month 1
+    { month: 'Mid Feb 2025', forecast: 130, hires: 12, turnovers: 25 },   // Huge turnover mid-month 2
+    { month: 'Mid Mar 2025', forecast: 135, hires: 10, turnovers: 20 },   // Huge turnover mid-month 3
+    { month: 'End Apr 2025', forecast: 140, hires: 45, turnovers: 8 },    // Compensation hiring end-month
+    { month: 'End May 2025', forecast: 155, hires: 45, turnovers: 25 },    // Overhiring end-month 1
+    { month: 'End Jun 2025', forecast: 160, hires: 52, turnovers: 6 },    // Overhiring end-month 2
+    { month: 'Jul 2025', forecast: 165, hires: 45, turnovers: 17 },        // Normal hiring
+    { month: 'Aug 2025', forecast: 165, hires: 0, turnovers: 14 },        // Normal hiring
+    { month: 'Sep 2025', forecast: 165, hires: 0, turnovers: 9 },        // Normal hiring
+    { month: 'Oct 2025', forecast: 170, hires: 10, turnovers: 6 },        // Normal hiring
+    { month: 'Nov 2025', forecast: 185, hires: 16, turnovers: 8 },        // Normal hiring
+    { month: 'Dec 2025', forecast: 190, hires: 14, turnovers: 12 },       // Year-end turnover
   ];
 
   // Calculate totals
@@ -263,6 +264,11 @@ function TA() {
   
   const sampleHires = generateHireData();
 
+  const handleFilterChange = (filters) => {
+    console.log('Active filters:', filters);
+    // TODO: Apply filters to data
+  };
+
   return (
     <div className="analytics-subsection">
       <Typography variant="h4" component="h2" gutterBottom>
@@ -272,6 +278,9 @@ function TA() {
       <Typography variant="body1" paragraph>
         Track recruitment metrics and hiring pipeline performance.
       </Typography>
+
+      {/* Filter Component */}
+      <TAFilters onFilterChange={handleFilterChange} />
 
       <Paper elevation={2} className="analytics-card" sx={{ mb: 3 }}>
         <Box p={3}>
