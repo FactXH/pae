@@ -1,13 +1,24 @@
-import React from 'react';
-import { Typography, Paper, Grid, Box, Chip, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import { Typography, Paper, Box, Chip, Stack, Grid } from '@mui/material';
 import ForecastTA from '../../components/ForecastTA';
 import ApplicationPipeline from '../../components/ApplicationPipeline';
 import PipelineStatus from '../../components/PipelineStatus';
 import HireQuality from '../../components/HireQuality';
 import TAFilters from '../../components/TAFilters';
+import TimeToHire from '../../components/TimeToHire';
+import TimeToHireTable from '../../components/TimeToHireTable';
 import './TA.css';
 
 function TA() {
+  // State to hold active filters
+  const [activeFilters, setActiveFilters] = useState({
+    team: '',
+    sub_team: '',
+    market: '',
+    manager: '',
+    job_role: '',
+    seniority: '',
+  });
   const initialHeadcount = 100;
   
   // Sample data - replace with actual data from API
@@ -265,8 +276,7 @@ function TA() {
   const sampleHires = generateHireData();
 
   const handleFilterChange = (filters) => {
-    console.log('Active filters:', filters);
-    // TODO: Apply filters to data
+    setActiveFilters(filters);
   };
 
   return (
@@ -344,6 +354,16 @@ function TA() {
       {/* Hire Quality Section */}
       <Box mt={3}>
         <HireQuality hires={sampleHires} />
+      </Box>
+
+      {/* Time to Hire Section */}
+      <Box mt={3}>
+        <TimeToHire filters={activeFilters} />
+      </Box>
+
+      {/* Time to Hire Table - Decision Tree */}
+      <Box mt={3}>
+        <TimeToHireTable filters={activeFilters} />
       </Box>
     </div>
   );

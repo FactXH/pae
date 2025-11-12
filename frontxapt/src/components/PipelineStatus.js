@@ -9,7 +9,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { Box, Stack, Typography, Slider } from '@mui/material';
+import { Box, Typography, Slider } from '@mui/material';
 
 // Register ChartJS components
 ChartJS.register(
@@ -139,7 +139,6 @@ function PipelineStatus({
 
       const hiredPhase = app.phases[hiredPhaseIndex];
       const hiredStart = new Date(hiredPhase.effectiveFrom);
-      const hiredEnd = new Date(hiredPhase.effectiveTo);
 
       // Only count if hired AFTER the period start date and BEFORE period end
       if (hiredStart < periodStart || hiredStart > periodEnd) return;

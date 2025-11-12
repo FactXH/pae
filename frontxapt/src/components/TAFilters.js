@@ -1,6 +1,34 @@
 import React, { useState, useMemo } from 'react';
 import { Box, FormControl, InputLabel, Select, MenuItem, Chip, Stack, Paper } from '@mui/material';
 
+// Mock dataset for filters
+const mockData = [
+  { team: 'Engineering', sub_team: 'Backend', market: 'US', manager: 'Alice Johnson', job_role: 'Software Engineer', seniority: 'Senior' },
+  { team: 'Engineering', sub_team: 'Backend', market: 'US', manager: 'Alice Johnson', job_role: 'Software Engineer', seniority: 'Mid' },
+  { team: 'Engineering', sub_team: 'Backend', market: 'EU', manager: 'Bob Smith', job_role: 'DevOps Engineer', seniority: 'Senior' },
+  { team: 'Engineering', sub_team: 'Frontend', market: 'US', manager: 'Carol White', job_role: 'Frontend Developer', seniority: 'Mid' },
+  { team: 'Engineering', sub_team: 'Frontend', market: 'US', manager: 'Carol White', job_role: 'Frontend Developer', seniority: 'Junior' },
+  { team: 'Engineering', sub_team: 'Frontend', market: 'LATAM', manager: 'Carol White', job_role: 'UI/UX Designer', seniority: 'Mid' },
+  { team: 'Engineering', sub_team: 'QA', market: 'EU', manager: 'David Lee', job_role: 'QA Engineer', seniority: 'Senior' },
+  { team: 'Engineering', sub_team: 'QA', market: 'US', manager: 'David Lee', job_role: 'QA Engineer', seniority: 'Mid' },
+  { team: 'Product', sub_team: 'Product Management', market: 'US', manager: 'Emma Davis', job_role: 'Product Manager', seniority: 'Senior' },
+  { team: 'Product', sub_team: 'Product Management', market: 'EU', manager: 'Emma Davis', job_role: 'Product Manager', seniority: 'Mid' },
+  { team: 'Product', sub_team: 'Product Design', market: 'US', manager: 'Frank Wilson', job_role: 'Product Designer', seniority: 'Senior' },
+  { team: 'Product', sub_team: 'Product Design', market: 'LATAM', manager: 'Frank Wilson', job_role: 'Product Designer', seniority: 'Junior' },
+  { team: 'Sales', sub_team: 'Enterprise Sales', market: 'US', manager: 'Grace Taylor', job_role: 'Account Executive', seniority: 'Senior' },
+  { team: 'Sales', sub_team: 'Enterprise Sales', market: 'US', manager: 'Grace Taylor', job_role: 'Account Executive', seniority: 'Mid' },
+  { team: 'Sales', sub_team: 'SMB Sales', market: 'EU', manager: 'Henry Brown', job_role: 'Sales Representative', seniority: 'Junior' },
+  { team: 'Sales', sub_team: 'SMB Sales', market: 'LATAM', manager: 'Henry Brown', job_role: 'Sales Representative', seniority: 'Mid' },
+  { team: 'Marketing', sub_team: 'Digital Marketing', market: 'US', manager: 'Iris Martinez', job_role: 'Marketing Specialist', seniority: 'Mid' },
+  { team: 'Marketing', sub_team: 'Digital Marketing', market: 'EU', manager: 'Iris Martinez', job_role: 'SEO Specialist', seniority: 'Senior' },
+  { team: 'Marketing', sub_team: 'Content', market: 'US', manager: 'Jack Anderson', job_role: 'Content Writer', seniority: 'Junior' },
+  { team: 'Marketing', sub_team: 'Content', market: 'LATAM', manager: 'Jack Anderson', job_role: 'Content Strategist', seniority: 'Mid' },
+  { team: 'Data', sub_team: 'Data Engineering', market: 'US', manager: 'Kate Robinson', job_role: 'Data Engineer', seniority: 'Senior' },
+  { team: 'Data', sub_team: 'Data Engineering', market: 'EU', manager: 'Kate Robinson', job_role: 'Data Engineer', seniority: 'Mid' },
+  { team: 'Data', sub_team: 'Analytics', market: 'US', manager: 'Leo Clark', job_role: 'Data Analyst', seniority: 'Mid' },
+  { team: 'Data', sub_team: 'Analytics', market: 'LATAM', manager: 'Leo Clark', job_role: 'Business Analyst', seniority: 'Junior' },
+];
+
 /**
  * TAFilters Component
  * 
@@ -10,33 +38,6 @@ import { Box, FormControl, InputLabel, Select, MenuItem, Chip, Stack, Paper } fr
  * @param {Function} onFilterChange - Callback when filters change, receives filter object
  */
 function TAFilters({ onFilterChange }) {
-  // Mock dataset for filters
-  const mockData = [
-    { team: 'Engineering', sub_team: 'Backend', market: 'US', manager: 'Alice Johnson', job_role: 'Software Engineer', seniority: 'Senior' },
-    { team: 'Engineering', sub_team: 'Backend', market: 'US', manager: 'Alice Johnson', job_role: 'Software Engineer', seniority: 'Mid' },
-    { team: 'Engineering', sub_team: 'Backend', market: 'EU', manager: 'Bob Smith', job_role: 'DevOps Engineer', seniority: 'Senior' },
-    { team: 'Engineering', sub_team: 'Frontend', market: 'US', manager: 'Carol White', job_role: 'Frontend Developer', seniority: 'Mid' },
-    { team: 'Engineering', sub_team: 'Frontend', market: 'US', manager: 'Carol White', job_role: 'Frontend Developer', seniority: 'Junior' },
-    { team: 'Engineering', sub_team: 'Frontend', market: 'LATAM', manager: 'Carol White', job_role: 'UI/UX Designer', seniority: 'Mid' },
-    { team: 'Engineering', sub_team: 'QA', market: 'EU', manager: 'David Lee', job_role: 'QA Engineer', seniority: 'Senior' },
-    { team: 'Engineering', sub_team: 'QA', market: 'US', manager: 'David Lee', job_role: 'QA Engineer', seniority: 'Mid' },
-    { team: 'Product', sub_team: 'Product Management', market: 'US', manager: 'Emma Davis', job_role: 'Product Manager', seniority: 'Senior' },
-    { team: 'Product', sub_team: 'Product Management', market: 'EU', manager: 'Emma Davis', job_role: 'Product Manager', seniority: 'Mid' },
-    { team: 'Product', sub_team: 'Product Design', market: 'US', manager: 'Frank Wilson', job_role: 'Product Designer', seniority: 'Senior' },
-    { team: 'Product', sub_team: 'Product Design', market: 'LATAM', manager: 'Frank Wilson', job_role: 'Product Designer', seniority: 'Junior' },
-    { team: 'Sales', sub_team: 'Enterprise Sales', market: 'US', manager: 'Grace Taylor', job_role: 'Account Executive', seniority: 'Senior' },
-    { team: 'Sales', sub_team: 'Enterprise Sales', market: 'US', manager: 'Grace Taylor', job_role: 'Account Executive', seniority: 'Mid' },
-    { team: 'Sales', sub_team: 'SMB Sales', market: 'EU', manager: 'Henry Brown', job_role: 'Sales Representative', seniority: 'Junior' },
-    { team: 'Sales', sub_team: 'SMB Sales', market: 'LATAM', manager: 'Henry Brown', job_role: 'Sales Representative', seniority: 'Mid' },
-    { team: 'Marketing', sub_team: 'Digital Marketing', market: 'US', manager: 'Iris Martinez', job_role: 'Marketing Specialist', seniority: 'Mid' },
-    { team: 'Marketing', sub_team: 'Digital Marketing', market: 'EU', manager: 'Iris Martinez', job_role: 'SEO Specialist', seniority: 'Senior' },
-    { team: 'Marketing', sub_team: 'Content', market: 'US', manager: 'Jack Anderson', job_role: 'Content Writer', seniority: 'Junior' },
-    { team: 'Marketing', sub_team: 'Content', market: 'LATAM', manager: 'Jack Anderson', job_role: 'Content Strategist', seniority: 'Mid' },
-    { team: 'Data', sub_team: 'Data Engineering', market: 'US', manager: 'Kate Robinson', job_role: 'Data Engineer', seniority: 'Senior' },
-    { team: 'Data', sub_team: 'Data Engineering', market: 'EU', manager: 'Kate Robinson', job_role: 'Data Engineer', seniority: 'Mid' },
-    { team: 'Data', sub_team: 'Analytics', market: 'US', manager: 'Leo Clark', job_role: 'Data Analyst', seniority: 'Mid' },
-    { team: 'Data', sub_team: 'Analytics', market: 'LATAM', manager: 'Leo Clark', job_role: 'Business Analyst', seniority: 'Junior' },
-  ];
 
   const [filters, setFilters] = useState({
     team: '',
