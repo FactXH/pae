@@ -127,34 +127,92 @@ function PipelineStatus({
     return { rejected, passed, waiting };
   };
 
+  // Special analysis for Hired phase (show current vs left/turnover)
+  const analyzeHiredPhase = () => {
+    let currentlyHired = 0;
+    let left = 0;
+
+    applications.forEach(app => {
+      // Find Hired phase
+      const hiredPhaseIndex = app.phases.findIndex(p => p.name === 'Hired');
+      if (hiredPhaseIndex === -1) return; // Never hired
+
+      const hiredPhase = app.phases[hiredPhaseIndex];
+      const hiredStart = new Date(hiredPhase.effectiveFrom);
+      const hiredEnd = new Date(hiredPhase.effectiveTo);
+
+      // Only count if hired AFTER the period start date and BEFORE period end
+      if (hiredStart < periodStart || hiredStart > periodEnd) return;
+
+      // Check if there's a Turnover phase after Hired
+      const turnoverPhaseIndex = app.phases.findIndex(p => p.name === 'Turnover');
+      
+      if (turnoverPhaseIndex > hiredPhaseIndex) {
+        const turnoverPhase = app.phases[turnoverPhaseIndex];
+        const turnoverStart = new Date(turnoverPhase.effectiveFrom);
+        
+        // Only count as left if turnover happened within the period
+        if (turnoverStart <= periodEnd) {
+          left++;
+        } else {
+          // Turnover happened after period - still hired during this period
+          currentlyHired++;
+        }
+      } else {
+        // Still hired
+        currentlyHired++;
+      }
+    });
+
+    return { currentlyHired, left };
+  };
+
   // Calculate stats for each phase
   const phaseStats = phaseOrder.map(phaseName => ({
     phase: phaseName,
     ...analyzePhase(phaseName)
   }));
 
+  // Add Hired phase stats
+  const hiredStats = analyzeHiredPhase();
+  const allLabels = [...phaseOrder, 'Hired'];
+
   const chartData = {
-    labels: phaseOrder,
+    labels: allLabels,
     datasets: [
       {
         label: 'Rejected',
-        data: phaseStats.map(s => s.rejected),
+        data: [...phaseStats.map(s => s.rejected), 0], // No rejected for Hired
         backgroundColor: 'rgba(244, 67, 54, 0.8)',
         borderColor: 'rgb(244, 67, 54)',
         borderWidth: 1,
       },
       {
         label: 'Passed to Next',
-        data: phaseStats.map(s => s.passed),
+        data: [...phaseStats.map(s => s.passed), 0], // No passed for Hired (no next phase)
         backgroundColor: 'rgba(76, 175, 80, 0.8)',
         borderColor: 'rgb(76, 175, 80)',
         borderWidth: 1,
       },
       {
         label: 'Still Waiting',
-        data: phaseStats.map(s => s.waiting),
+        data: [...phaseStats.map(s => s.waiting), 0], // No waiting for Hired
         backgroundColor: 'rgba(255, 193, 7, 0.8)',
         borderColor: 'rgb(255, 193, 7)',
+        borderWidth: 1,
+      },
+      {
+        label: 'Currently Hired',
+        data: [...phaseStats.map(() => 0), hiredStats.currentlyHired], // Only for Hired phase
+        backgroundColor: 'rgba(33, 150, 243, 0.8)',
+        borderColor: 'rgb(33, 150, 243)',
+        borderWidth: 1,
+      },
+      {
+        label: 'Left (Turnover)',
+        data: [...phaseStats.map(() => 0), hiredStats.left], // Only for Hired phase
+        backgroundColor: 'rgba(158, 158, 158, 0.8)',
+        borderColor: 'rgb(158, 158, 158)',
         borderWidth: 1,
       },
     ],
@@ -203,6 +261,7 @@ function PipelineStatus({
       y: {
         stacked: true,
         beginAtZero: true,
+        max: 600,
         title: {
           display: true,
           text: 'Number of Applications',

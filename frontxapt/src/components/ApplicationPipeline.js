@@ -44,10 +44,10 @@ ChartJS.register(
  * @param {Array} phaseNames - Array of phase names in order (e.g., ['Applied', 'Phone Screen', ..., 'Hired', 'Rejected'])
  */
 function ApplicationPipeline({ applications = [], phaseNames = [] }) {
-  // State to track which phases are visible
+  // State to track which phases are visible - rejected phases hidden by default
   const [visiblePhases, setVisiblePhases] = useState(
     phaseNames.reduce((acc, phase) => {
-      acc[phase] = true;
+      acc[phase] = !phase.startsWith('Rejected'); // Hide rejected phases by default
       return acc;
     }, {})
   );

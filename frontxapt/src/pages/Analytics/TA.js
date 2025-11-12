@@ -182,9 +182,9 @@ function TA() {
       const startDay = 1 + Math.floor(Math.random() * 10);
       const phases = createApplication(startDay, '01');
       
-      // Check if hired - 15% of hired people have turnover
+      // Check if hired - 45% of hired people have turnover (3x the original 15%)
       const lastPhase = phases[phases.length - 1];
-      if (lastPhase.name === 'Hired' && Math.random() < 0.15) {
+      if (lastPhase.name === 'Hired' && Math.random() < 0.45) {
         // Add turnover phase starting 30-60 days after hire
         const hireDay = parseInt(lastPhase.effectiveFrom.split('-')[2]);
         const turnoverDay = hireDay + 30 + Math.floor(Math.random() * 30);
