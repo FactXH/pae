@@ -242,32 +242,34 @@ function OverviewFilters({ onFilterChange, filters = {} }) {
             label="Job Role"
             onChange={(e) => handleChange('job_role', e.target.value)}
             input={<OutlinedInput label="Job Role" />}
-            renderValue={(selected) => selected.length === 0 ? 'All Job Roles' : selected.join(', ')}
+            renderValue={(selected) => selected.length === 0 ? 'All' : selected.join(', ')}
+            sx={{ fontSize: '0.875rem' }}
           >
             {availableOptions.job_roles.map(jobRole => (
-              <MenuItem key={jobRole} value={jobRole}>
+              <MenuItem key={jobRole} value={jobRole} dense>
                 <Checkbox checked={(filters.job_role || []).includes(jobRole)} size="small" />
-                <ListItemText primary={jobRole} />
+                <ListItemText primary={jobRole} primaryTypographyProps={{ fontSize: '0.875rem' }} />
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         {/* Domain Filter */}
-        <FormControl sx={{ minWidth: 180 }} size="small">
-          <InputLabel>Domain</InputLabel>
+        <FormControl sx={{ minWidth: 130, flex: '1 1 130px' }} size="small">
+          <InputLabel sx={{ fontSize: '0.875rem' }}>Domain</InputLabel>
           <Select
             multiple
             value={filters.domain || []}
             label="Domain"
             onChange={(e) => handleChange('domain', e.target.value)}
             input={<OutlinedInput label="Domain" />}
-            renderValue={(selected) => selected.length === 0 ? 'All Domains' : selected.join(', ')}
+            renderValue={(selected) => selected.length === 0 ? 'All' : selected.join(', ')}
+            sx={{ fontSize: '0.875rem' }}
           >
             {availableOptions.domains.map(domain => (
-              <MenuItem key={domain} value={domain}>
+              <MenuItem key={domain} value={domain} dense>
                 <Checkbox checked={(filters.domain || []).includes(domain)} size="small" />
-                <ListItemText primary={domain} />
+                <ListItemText primary={domain} primaryTypographyProps={{ fontSize: '0.875rem' }} />
               </MenuItem>
             ))}
           </Select>

@@ -9,11 +9,11 @@ function PageLayout({ title, subtitle, children }) {
         <Typography variant="h3" component="h1" className="page-title">
           {title}
         </Typography>
-        {subtitle && (
+        {/* {subtitle && (
           <Typography variant="body1" className="page-subtitle">
             {subtitle}
           </Typography>
-        )}
+        )} */}
       </Box>
 
       <Box className="page-content">

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Typography, Paper, Grid, Box, Card, CardContent } from '@mui/material';
-import OverviewFilters from '../../components/OverviewFilters';
+// import OverviewFilters from '../../components/OverviewFilters'; // Old version
+import OverviewFiltersV2 from '../../components/OverviewFiltersV2'; // New floating version
 import HeadcountTable from '../../components/HeadcountTable';
 import HeadcountTimeline from '../../components/HeadcountTimeline';
 import { mockEmployeeData } from '../../data/mockEmployeeData';
@@ -92,16 +93,16 @@ function Overview() {
 
   return (
     <div className="analytics-subsection">
-      <Typography variant="h4" component="h2" gutterBottom>
+      {/* <Typography variant="h4" component="h2" gutterBottom>
         Analytics Overview
-      </Typography>
+      </Typography> */}
 
-      <Typography variant="body1" paragraph>
+      {/* <Typography variant="body1" paragraph>
         High-level view of key metrics across all areas.
-      </Typography>
+      </Typography> */}
 
-      {/* Filters */}
-      <OverviewFilters 
+      {/* Filters - New Floating Version */}
+      <OverviewFiltersV2 
         filters={activeFilters} 
         onFilterChange={handleFilterChange} 
       />
