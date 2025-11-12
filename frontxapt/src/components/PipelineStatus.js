@@ -9,7 +9,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { Box, TextField, Stack } from '@mui/material';
+import { Box, Stack, Typography, Slider } from '@mui/material';
 
 // Register ChartJS components
 ChartJS.register(
@@ -38,11 +38,45 @@ function PipelineStatus({
   initialEndDate = '',
   phaseOrder = ['Applied', 'Phone Screen', 'Technical Interview', 'Final Interview', 'Offer']
 }) {
-  const [startDate, setStartDate] = useState(initialStartDate);
-  const [endDate, setEndDate] = useState(initialEndDate);
+  // Get all unique dates from applications
+  const getAllDates = () => {
+    const dates = new Set();
+    applications.forEach(app => {
+      app.phases.forEach(phase => {
+        dates.add(phase.effectiveFrom);
+        dates.add(phase.effectiveTo);
+      });
+    });
+    return Array.from(dates).sort();
+  };
+
+  const allDates = getAllDates();
+  const minDate = allDates[0] || '2025-01-01';
+  const maxDate = allDates[allDates.length - 1] || '2025-04-30';
+
+  // Convert dates to numeric values for slider
+  const dateToValue = (dateStr) => {
+    return new Date(dateStr).getTime();
+  };
+
+  const valueToDate = (value) => {
+    return new Date(value).toISOString().split('T')[0];
+  };
+
+  const [dateRange, setDateRange] = useState([
+    dateToValue(initialStartDate || minDate),
+    dateToValue(initialEndDate || maxDate)
+  ]);
+
+  const startDate = valueToDate(dateRange[0]);
+  const endDate = valueToDate(dateRange[1]);
 
   const periodStart = new Date(startDate);
   const periodEnd = new Date(endDate);
+
+  const handleSliderChange = (event, newValue) => {
+    setDateRange(newValue);
+  };
 
   // Analyze each phase
   const analyzePhase = (phaseName) => {
@@ -182,25 +216,36 @@ function PipelineStatus({
 
   return (
     <Box>
-      {/* Date range slicer */}
-      <Stack direction="row" spacing={2} mb={3}>
-        <TextField
-          label="Start Date"
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          size="small"
+      {/* Date range slider */}
+      <Box mb={4} px={2}>
+        <Typography variant="subtitle2" gutterBottom>
+          Date Range: {startDate} to {endDate}
+        </Typography>
+        <Slider
+          value={dateRange}
+          onChange={handleSliderChange}
+          valueLabelDisplay="auto"
+          valueLabelFormat={(value) => valueToDate(value)}
+          min={dateToValue(minDate)}
+          max={dateToValue(maxDate)}
+          sx={{
+            '& .MuiSlider-valueLabel': {
+              fontSize: 12,
+              fontWeight: 'normal',
+              top: -6,
+              backgroundColor: 'unset',
+              color: 'text.primary',
+              '&:before': {
+                display: 'none',
+              },
+              '& *': {
+                background: 'transparent',
+                color: 'text.primary',
+              },
+            },
+          }}
         />
-        <TextField
-          label="End Date"
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          size="small"
-        />
-      </Stack>
+      </Box>
 
       {/* Chart */}
       <Box height={400}>

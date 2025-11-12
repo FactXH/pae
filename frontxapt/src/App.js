@@ -23,10 +23,13 @@ const theme = createTheme({
 });
 
 function App() {
+  // Use /pae basename only in production (GitHub Pages)
+  const basename = process.env.NODE_ENV === 'production' ? '/pae' : '';
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
+      <Router basename={basename}>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />

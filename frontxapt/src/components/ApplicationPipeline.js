@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { Box, FormGroup, FormControlLabel, Checkbox, Stack } from '@mui/material';
+import { Box, FormGroup, FormControlLabel, Checkbox, Stack, Button } from '@mui/material';
 
 // Register ChartJS components
 ChartJS.register(
@@ -58,6 +58,20 @@ function ApplicationPipeline({ applications = [], phaseNames = [] }) {
       ...prev,
       [phaseName]: !prev[phaseName]
     }));
+  };
+
+  // Toggle all rejected phases at once
+  const handleToggleAllRejected = () => {
+    const rejectedPhases = phaseNames.filter(name => name.startsWith('Rejected'));
+    const allRejectedVisible = rejectedPhases.every(phase => visiblePhases[phase]);
+    
+    setVisiblePhases(prev => {
+      const updated = { ...prev };
+      rejectedPhases.forEach(phase => {
+        updated[phase] = !allRejectedVisible;
+      });
+      return updated;
+    });
   };
 
   // Calculate date range
@@ -219,6 +233,16 @@ function ApplicationPipeline({ applications = [], phaseNames = [] }) {
     <Box>
       {/* Phase toggle controls */}
       <Box mb={2}>
+        <Stack direction="row" spacing={2} alignItems="center" mb={1}>
+          <Button 
+            variant="outlined" 
+            size="small"
+            onClick={handleToggleAllRejected}
+            sx={{ textTransform: 'none' }}
+          >
+            Toggle All Rejected
+          </Button>
+        </Stack>
         <FormGroup>
           <Stack direction="row" spacing={2} flexWrap="wrap">
             {phaseNames.map((phaseName) => {
