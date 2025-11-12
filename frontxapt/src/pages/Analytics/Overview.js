@@ -1,8 +1,95 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Typography, Paper, Grid, Box, Card, CardContent } from '@mui/material';
+import OverviewFilters from '../../components/OverviewFilters';
+import HeadcountTable from '../../components/HeadcountTable';
+import HeadcountTimeline from '../../components/HeadcountTimeline';
+import { mockEmployeeData } from '../../data/mockEmployeeData';
 import './Overview.css';
 
 function Overview() {
+  const [activeFilters, setActiveFilters] = useState({});
+
+  const handleFilterChange = (newFilters) => {
+    setActiveFilters(newFilters);
+  };
+
+  // Calculate metrics based on filtered data
+  const metrics = useMemo(() => {
+    let employees = mockEmployeeData;
+    
+    // Time travel filter takes precedence - shows snapshot at specific date
+    if (activeFilters.time_travel !== undefined) {
+      const minDate = new Date('2022-10-01');
+      const timeTravelDate = new Date(minDate);
+      timeTravelDate.setDate(timeTravelDate.getDate() + activeFilters.time_travel);
+      const timeTravelDateStr = timeTravelDate.toISOString().split('T')[0];
+      
+      employees = employees.filter(emp => {
+        const onboarded = emp.onboarding_date <= timeTravelDateStr;
+        const notOffboarded = !emp.offboarding_date || emp.offboarding_date >= timeTravelDateStr;
+        return onboarded && notOffboarded;
+      });
+    }
+    // Otherwise use date range filter
+    else if (activeFilters.date_range && activeFilters.date_range.length === 2) {
+      const [startValue, endValue] = activeFilters.date_range;
+      
+      // Convert slider values to dates (assuming minDate is October 1, 2022)
+      const minDate = new Date('2022-10-01');
+      const startDate = new Date(minDate);
+      startDate.setDate(startDate.getDate() + startValue);
+      const endDate = new Date(minDate);
+      endDate.setDate(endDate.getDate() + endValue);
+      
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+      
+      employees = employees.filter(emp => {
+        const onboarded = emp.onboarding_date <= endDateStr;
+        const notOffboarded = !emp.offboarding_date || emp.offboarding_date >= startDateStr;
+        return onboarded && notOffboarded;
+      });
+    }
+    
+    // Apply filters (now arrays)
+    if (activeFilters.team && activeFilters.team.length > 0) {
+      employees = employees.filter(e => activeFilters.team.includes(e.team));
+    }
+    if (activeFilters.sub_team && activeFilters.sub_team.length > 0) {
+      employees = employees.filter(e => activeFilters.sub_team.includes(e.sub_team));
+    }
+    if (activeFilters.level && activeFilters.level.length > 0) {
+      employees = employees.filter(e => activeFilters.level.includes(e.level));
+    }
+    if (activeFilters.job_role && activeFilters.job_role.length > 0) {
+      employees = employees.filter(e => activeFilters.job_role.includes(e.job_role));
+    }
+    if (activeFilters.domain && activeFilters.domain.length > 0) {
+      employees = employees.filter(e => activeFilters.domain.includes(e.domain));
+    }
+    
+    const activeEmployees = employees.filter(e => !e.offboarding_date);
+    const offboardedEmployees = employees.filter(e => e.offboarding_date);
+    
+    // Calculate turnover rate
+    const totalEmployees = employees.length;
+    const turnoverRate = totalEmployees > 0 
+      ? ((offboardedEmployees.length / totalEmployees) * 100).toFixed(1)
+      : 0;
+    
+    // Calculate YTD hires (2023 onwards)
+    const ytdHires = employees.filter(e => {
+      const onboardingYear = new Date(e.onboarding_date).getFullYear();
+      return onboardingYear >= 2023;
+    }).length;
+    
+    return {
+      activeEmployees: activeEmployees.length,
+      ytdHires,
+      turnoverRate,
+    };
+  }, [activeFilters]);
+
   return (
     <div className="analytics-subsection">
       <Typography variant="h4" component="h2" gutterBottom>
@@ -13,89 +100,27 @@ function Overview() {
         High-level view of key metrics across all areas.
       </Typography>
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
-        <Grid item xs={12} md={3}>
-          <Card className="stat-card">
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Total Hires (YTD)
-              </Typography>
-              <Typography variant="h3" component="div">
-                --
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+      {/* Filters */}
+      <OverviewFilters 
+        filters={activeFilters} 
+        onFilterChange={handleFilterChange} 
+      />
 
-        <Grid item xs={12} md={3}>
-          <Card className="stat-card">
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Active Employees
-              </Typography>
-              <Typography variant="h3" component="div">
-                --
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+      {/* Headcount Timeline Chart */}
+      <Paper elevation={2} sx={{ p: 3, mb: 3, mt: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Headcount Evolution Timeline
+        </Typography>
+        <Typography variant="body2" color="text.secondary" paragraph>
+          Historical view of active and inactive headcount by team over time
+        </Typography>
+        <HeadcountTimeline filters={activeFilters} />
+      </Paper>
 
-        <Grid item xs={12} md={3}>
-          <Card className="stat-card">
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Avg. Time to Hire
-              </Typography>
-              <Typography variant="h3" component="div">
-                -- days
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={3}>
-          <Card className="stat-card">
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Turnover Rate
-              </Typography>
-              <Typography variant="h3" component="div">
-                --%
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper elevation={2} className="analytics-card">
-            <Box p={3}>
-              <Typography variant="h6" gutterBottom>
-                Headcount Trend
-              </Typography>
-              <Box className="chart-placeholder" sx={{ height: '300px' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Employee count over time
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper elevation={2} className="analytics-card">
-            <Box p={3}>
-              <Typography variant="h6" gutterBottom>
-                Department Breakdown
-              </Typography>
-              <Box className="chart-placeholder" sx={{ height: '300px' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Employees by department
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+      {/* Headcount Decision Tree */}
+      <Box mt={3}>
+        <HeadcountTable filters={activeFilters} />
+      </Box>
     </div>
   );
 }

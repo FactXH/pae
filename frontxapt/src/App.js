@@ -8,6 +8,9 @@ import Employees from './pages/Employees';
 import Analytics from './pages/Analytics';
 import Overview from './pages/Analytics/Overview';
 import TA from './pages/Analytics/TA';
+import TalentDevelopment from './pages/Analytics/TalentDevelopment';
+import Managers from './pages/Analytics/Managers';
+import Equality from './pages/Analytics/Equality';
 import Engagement from './pages/Analytics/Engagement';
 import './App.css';
 
@@ -38,6 +41,9 @@ function App() {
               <Route index element={<Navigate to="overview" replace />} />
               <Route path="overview" element={<Overview />} />
               <Route path="ta" element={<TA />} />
+              <Route path="talent-development" element={<TalentDevelopment />} />
+              <Route path="managers" element={<Managers />} />
+              <Route path="equality" element={<Equality />} />
               <Route path="engagement" element={<Engagement />} />
             </Route>
           </Route>

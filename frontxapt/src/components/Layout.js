@@ -32,7 +32,7 @@ function Layout() {
       <footer className="footer">
         <Container maxWidth="lg">
           <Typography variant="body2" color="text.secondary" align="center">
-            © 2025 Xapt Dashboard. All rights reserved.
+            © 2025 Xapt Dashboard. All rights reserved to TopTalend.
           </Typography>
         </Container>
       </footer>

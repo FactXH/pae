@@ -223,12 +223,13 @@ function TimeToHireTable({ filters = {} }) {
             <TableBody>
               {rows.map((row) => {
                 const indent = row.level * 30;
-                const bgColor = row.level === 0 ? '#f5f5f5' : 
-                                row.level === 1 ? '#fafafa' : 
-                                row.level === 2 ? '#fcfcfc' : 'white';
+                const bgColor = row.level === 0 ? '#e8f5e9' : 
+                                row.level === 1 ? '#f5f5f5' : 
+                                row.level === 2 ? '#fafafa' : 'white';
                 const fontWeight = row.level === 0 ? 'bold' : 
                                    row.level === 1 ? 600 : 
                                    row.level === 2 ? 500 : 'normal';
+                const cellPaddingLeft = row.level === 0 ? 8 : 16 + indent;
                 
                 const isExpanded = expanded[row.path];
                 
@@ -237,12 +238,12 @@ function TimeToHireTable({ filters = {} }) {
                     key={row.key}
                     sx={{ 
                       backgroundColor: bgColor,
-                      '&:hover': { backgroundColor: row.level === 0 ? '#eeeeee' : '#f0f0f0' }
+                      '&:hover': { backgroundColor: row.level === 0 ? '#c8e6c9' : '#eeeeee' }
                     }}
                   >
                     <TableCell 
                       sx={{ 
-                        paddingLeft: `${8 + indent}px`,
+                        paddingLeft: `${cellPaddingLeft}px`,
                         fontWeight: fontWeight,
                         fontSize: row.level === 0 ? '0.95rem' : '0.875rem',
                         display: 'flex',
@@ -262,32 +263,32 @@ function TimeToHireTable({ filters = {} }) {
                       )}
                       {row.label}
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell align="center" sx={{ paddingLeft: row.level === 0 ? '16px' : `${24 + (row.level * 8)}px` }}>
                       <Chip 
                         label={row.count} 
                         size="small" 
                         variant="outlined"
-                        sx={{ minWidth: 40 }}
+                        sx={{ minWidth: 40, fontWeight: row.level === 0 ? 'bold' : 'normal' }}
                       />
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell align="center" sx={{ paddingLeft: row.level === 0 ? '16px' : `${24 + (row.level * 8)}px` }}>
                       <Chip 
                         label={`${row.average} days`}
                         size="small"
                         sx={{ 
                           backgroundColor: getColorForDays(row.average),
                           color: 'white',
-                          fontWeight: 'bold',
+                          fontWeight: row.level === 0 ? 'bold' : 'normal',
                           minWidth: 80,
                         }}
                       />
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell align="center" sx={{ paddingLeft: row.level === 0 ? '16px' : `${24 + (row.level * 8)}px` }}>
                       <Typography 
                         variant="caption" 
                         sx={{ 
                           color: getColorForDays(row.average),
-                          fontWeight: 'bold',
+                          fontWeight: row.level === 0 ? 'bold' : 600,
                         }}
                       >
                         {row.average <= 20 ? '🚀 Fast' :
