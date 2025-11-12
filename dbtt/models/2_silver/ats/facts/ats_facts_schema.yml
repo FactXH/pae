@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: fact_application_events
+    description: |
+      Silver layer fact table for application events.
+      Tracks all events related to applications throughout the hiring process.
+      
+      **Source**: br_athena_application_phases, br_athena_applications
+      **Grain**: One row per application event
+      **Type**: Transactional fact table
+      
+      **Key Metrics**:
+      - Event count
+      - Time between events
+      - Phase transitions
+    columns:
+      - name: event_id
+        description: "Unique identifier for the event"
+        tests:
+          - unique
+          - not_null
+      
+      - name: application_id
+        description: "Foreign key to dim_applications"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_applications')
+              field: application_id
+      
+      - name: event_timestamp
+        description: "Timestamp when the event occurred"
+        tests:
+          - not_null
+
+  - name: fact_job_posting_events
+    description: |
+      Silver layer fact table for job posting events.
+      Tracks all events and changes related to job postings.
+      
+      **Source**: br_athena_job_posting_cdc, br_athena_job_postings
+      **Grain**: One row per job posting event
+      **Type**: Transactional fact table
+      
+      **Key Metrics**:
+      - Posting duration
+      - Status changes
+      - Edit history
+    columns:
+      - name: event_id
+        description: "Unique identifier for the event"
+        tests:
+          - unique
+          - not_null
+      
+      - name: job_posting_id
+        description: "Foreign key to dim_job_posting"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_job_posting')
+              field: job_posting_id
+      
+      - name: event_timestamp
+        description: "Timestamp when the event occurred"
+        tests:
+          - not_null

@@ -1,0 +1,104 @@
+version: 2
+
+models:
+  - name: dim_candidates
+    description: |
+      Silver layer dimension table for candidates.
+      Provides a cleaned and standardized view of candidate information.
+      
+      **Source**: br_athena_candidates
+
+      **Grain**: One row per candidate
+      
+      **Type**: SCD Type 1
+    columns:
+      - name: candidate_id
+        description: "Unique identifier for the candidate"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_applications
+    description: |
+      Silver layer dimension table for applications.
+      Contains application details and current state.
+      
+      **Source**: br_athena_applications
+
+      **Grain**: One row per application
+
+      **Type**: SCD Type 1
+    columns:
+      - name: application_id
+        description: "Unique identifier for the application"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_job_posting
+    description: |
+      Silver layer dimension table for job postings.
+      Contains current state of job postings.
+      
+      **Source**: br_athena_job_postings
+
+      **Grain**: One row per job posting
+      
+      **Type**: SCD Type 1
+    columns:
+      - name: job_posting_id
+        description: "Unique identifier for the job posting"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_job_position
+    description: |
+      Silver layer dimension table for job positions.
+      Standardized job position information.
+      
+      **Source**: br_athena_job_postings
+
+      **Grain**: One row per job position
+      
+      **Type**: SCD Type 1
+    columns:
+      - name: job_position_id
+        description: "Unique identifier for the job position"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_hiring_managers
+    description: |
+      Silver layer dimension table for hiring managers.
+      Contains hiring manager details and metadata.
+      
+      **Source**: Multiple sources
+
+      **Grain**: One row per hiring manager
+      
+      **Type**: SCD Type 1
+    columns:
+      - name: hiring_manager_id
+        description: "Unique identifier for the hiring manager"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_talend_recruiters
+    description: |
+      Silver layer dimension table for Talend recruiters.
+      Recruiter information from Talend system.
+      
+      **Source**: Multiple sources
+
+      **Grain**: One row per recruiter
+      
+      **Type**: SCD Type 1
+    columns:
+      - name: recruiter_id
+        description: "Unique identifier for the recruiter"
+        tests:
+          - unique
+          - not_null

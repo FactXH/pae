@@ -667,3 +667,46 @@ select 1;
 
 create table athena_ats_candidate_sources as
 select 1;
+
+
+
+
+select 
+    email,
+    all_roles,
+    -- all_salaries,
+    salary_rank
+ from fact_employees 
+ where salary_rank is not null
+--  where email like 'xavier.hi%'
+--  or email like 'soledad%';
+order by salary_rank desc
+limit 10
+;
+
+select count(*) from fact_employees 
+ where salary_rank is not null
+ ;
+
+select salary_rank, current_salary_amount, email from fact_employees 
+ where salary_rank is not null
+ order by salary_rank asc
+ limit 10000
+ ;
+
+
+select xapt_id, email, onboarding_date, offboarding_date
+from fact_employees
+where email like 'jorge.chavez%'
+or email like 'xavier.hita%'
+
+ ;
+
+select email, current_salary_amount, salary_rank, all_roles
+ from fact_employees 
+ where email like 'jorge.chavez%';
+
+from dim_employees
+where email like 'jorge.chavez%'
+GROUP BY email
+ORDER BY count DESC

@@ -1,0 +1,46 @@
+.page-layout {
+  width: 100%;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  color: #666;
+  margin-top: 8px;
+}
+
+.page-content {
+  width: 100%;
+  padding: 0 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .page-content {
+    padding: 0 4px;
+  }
+}

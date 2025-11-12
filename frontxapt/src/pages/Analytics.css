@@ -1,0 +1,15 @@
+/* Analytics page specific styles */
+
+.analytics-card {
+  height: 100%;
+}
+
+.chart-placeholder {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  margin-top: 16px;
+}

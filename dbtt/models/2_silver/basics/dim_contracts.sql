@@ -6,7 +6,7 @@ terminated_employees as (
     select
         employee_id,
         offboarding_date as offboarding_date
-    from dim_employees
+    from slv_employees
     where offboarding_date is not null
 ),
 

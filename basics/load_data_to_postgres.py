@@ -419,8 +419,7 @@ def load_hiring_processes():
     loader.load_file_to_database("/home/xavier/Documents/pae/atickets/initial_hackaton/data/files/airtable_TA_2025.csv", 'hiring_process_2025')
     loader.load_file_to_database("/home/xavier/Documents/pae/atickets/initial_hackaton/data/files/offer_letter_status.csv", 'offer_letters')
     loader.load_file_to_database("/home/xavier/Documents/pae/_adata/talent/ta/application_steps.csv", 'application_steps')
-
-    
+   
 def load_job_postings_status():
     loader = Loader()
     query = """
@@ -495,7 +494,7 @@ def load_ats_factorial_tables():
     loader = Loader()
     tables = ['ats_hiring_phases', 'ats_application_phases', 'ats_applications']
     tables = []
-    deddup_tables = ['ats_job_postings', 'ats_candidates'] + ['ats_hiring_phases', 'ats_application_phases', 'ats_applications']
+    deddup_tables = ['ats_job_postings', 'ats_candidates', 'ats_hiring_phases', 'ats_application_phases', 'ats_applications']
     deddup_tables = ['ats_candidate_sources', 'ats_rejection_reasons']
     for table in tables:
         loader = Loader()
