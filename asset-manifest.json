@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/pae/static/css/main.4312e55b.css",
+    "main.js": "/pae/static/js/main.83875c76.js",
+    "static/js/453.6c19272b.chunk.js": "/pae/static/js/453.6c19272b.chunk.js",
+    "index.html": "/pae/index.html",
+    "main.4312e55b.css.map": "/pae/static/css/main.4312e55b.css.map",
+    "main.83875c76.js.map": "/pae/static/js/main.83875c76.js.map",
+    "453.6c19272b.chunk.js.map": "/pae/static/js/453.6c19272b.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4312e55b.css",
+    "static/js/main.83875c76.js"
+  ]
+}
