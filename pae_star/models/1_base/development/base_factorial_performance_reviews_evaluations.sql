@@ -1,5 +1,5 @@
 with 
-{{ dedup_not_deleted_source('performance', 'performance_reviews_evaluations', include_deleted=True) }}
+{{ dedup_not_deleted_source('performance', 'performance_review_evaluations', include_deleted=True) }}
 
 select
     id as evaluation_id,
@@ -14,4 +14,4 @@ select
         when _cdc is null then null
         else _cdc.op
     end as last_operation
-from dedup_performance_reviews_evaluations
+from dedup_performance_review_evaluations

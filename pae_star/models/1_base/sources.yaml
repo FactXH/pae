@@ -71,7 +71,7 @@ sources:
     - name: performance_review_process_targets
       description: "Raw table of targets/goals associated with performance review processes."
 
-    - name: performance_reviews_evaluations
+    - name: performance_review_evaluations
       description: "Raw table with individual evaluation records for performance reviews."
 
     - name: performance_review_final_employee_scores

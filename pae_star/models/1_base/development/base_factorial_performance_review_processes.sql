@@ -8,8 +8,8 @@ select
     created_at,
     starts_at,
     case 
-        when starts_at is not null then date_parse(starts_at, '%Y-%m-%d')
-        when created_at is not null then date_parse(created_at, '%Y-%m-%d')
+        when starts_at is not null then cast(starts_at as date)
+        when created_at is not null then cast(created_at as date)
         else null
     end as performance_review_start_date,
     case 
