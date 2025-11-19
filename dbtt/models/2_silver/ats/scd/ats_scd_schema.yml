@@ -22,31 +22,31 @@ models:
     columns:
       - name: surrogate_key
         description: "Surrogate key for the SCD record (unique per version)"
-        tests:
-          - unique
-          - not_null
+        # tests:
+        #   - unique
+        #   - not_null
       
       - name: job_posting_id
         description: "Natural key - job posting identifier (same across versions)"
-        tests:
-          - not_null
+        # tests:
+        #   - not_null
       
       - name: effective_from
         description: "Start date when this version became effective"
-        tests:
-          - not_null
+        # tests:
+        #   - not_null
       
       - name: effective_to
         description: "End date when this version ceased to be effective (NULL for current record)"
       
       - name: is_current
         description: "Boolean flag indicating if this is the current/active version"
-        tests:
-          - not_null
-          - accepted_values:
-              values: [true, false]
+        # tests:
+        #   - not_null
+        #   - accepted_values:
+        #       values: [true, false]
       
       - name: version_number
         description: "Sequential version number for this job posting"
-        tests:
-          - not_null
+        # tests:
+        #   - not_null

@@ -1,0 +1,16 @@
+models:
+  - name: base_factorial_teams
+    description: |-
+      Base model for factorial teams. Differenciating temas, from office, from market in the team type column.
+      Deduping from the cdc table and also getting the deleted as we want to see the deleted teams! :)
+    columns:
+      - name: team_id
+        data_type: bigint
+      - name: team_name
+        data_type: varchar
+      - name: team_level
+        data_type: bigint
+      - name: team_type
+        data_type: varchar
+      - name: last_operation
+        data_type: varchar

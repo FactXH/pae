@@ -1,0 +1,198 @@
+level1,level2,level3,market1,market2
+CX,AM,Core & XL,Core,Spain
+CX,AM,Core & XL,Core,Italy
+CX,AM,Core & XL,Emerging,Row
+CX,AM,Core & XL,Core,Germany
+CX,AM,Core & XL,Emerging,United States
+CX,AM,Core & XL,Emerging,LATAM
+CX,AM,Core & XL,Core,France
+CX,AM,Core & XL,Core,Portugal
+CX,AM,Core & XL,Emerging,Brazil
+CX,AM,Small Accounts,Core,Spain
+CX,AM,Small Accounts,Core,Italy
+CX,AM,Small Accounts,No Market,All
+CX,AM,Small Accounts,Core,France
+CX,AM,Small Accounts,Core,Germany
+CX,AM,Small Accounts,Emerging,Row
+CX,AM,Small Accounts,Core,Portugal
+CX,CS,Call Center,No Market,All
+CX,CS,Call Center,Core,Spain
+CX,CS,Customer Support,Core,Spain
+CX,CS,Customer Support,Core,Italy
+CX,CS,Customer Support,Core,Portugal
+CX,CS,Customer Support,No Market,All
+CX,CS,Customer Support,Emerging,LATAM
+CX,CS,Customer Support,Core,Germany
+CX,CS,Customer Support,Core,France
+CX,CS,Customer Support,Emerging,Row
+CX,CS,Product Support,No Market,All
+CX,CS,Product Support,Core,Italy
+CX,CS,Product Support,Core,Spain
+CX,Consultant services,General,Core,France
+CX,Consultant services,General,Core,Spain
+CX,Consultant services,General,Core,Italy
+CX,Consultant services,General,Core,Germany
+CX,Consultant services,General,No Market,All
+CX,Consultant services,General,Core,Portugal
+CX,General,Management,No Market,All
+CX,General,Quality,Core,Italy
+CX,General,Trainings,No Market,All
+CX,Onboarding,General,Core,Spain
+CX,Onboarding,General,Core,France
+CX,Onboarding,General,Core,Portugal
+CX,Onboarding,General,Core,Italy
+CX,Onboarding,General,Core,Germany
+CX,Onboarding,General,Emerging,Brazil
+CX,Onboarding,General,No Market,All
+CX,Onboarding,General,Emerging,United States
+CX,Sales services,General,Core,Italy
+CX,Sales services,General,No Market,All
+CX,Sales services,General,Core,Spain
+CX,Sales services,General,Emerging,Row
+CX,Sales services,General,Core,Portugal
+CX,Sales services,General,Emerging,LATAM
+CX,Sales services,General,Core,Germany
+CX,Sales services,General,Core,France
+CX,Tech Support,Data Entry,No Market,All
+CX,Tech Support,Knowledge,No Market,All
+CX,Tech Support,Support,No Market,All
+CX,Tech Support,Support,Core,Spain
+Channel,General,General,Core,Spain
+Channel,General,General,Core,Italy
+Channel,General,General,Emerging,Brazil
+Channel,General,General,Core,France
+Channel,General,General,Emerging,Row
+Channel,General,General,Emerging,LATAM
+Channel,General,General,No Market,All
+Channel,General,General,Core,Germany
+Channel,General,General,Emerging,United States
+Channel,General,General,Core,Portugal
+Channel,Marketing,General,Core,Germany
+Channel,Marketing,General,Emerging,Row
+Channel,Marketing,General,Core,Spain
+Channel,Marketing,General,Core,Italy
+Channel,Marketing,General,Emerging,LATAM
+Channel,Marketing,General,Core,Portugal
+Channel,Marketing,General,Core,France
+Channel,Marketing,General,No Market,All
+Finance,General,General,No Market,All
+Finance,General,General,Emerging,LATAM
+Finance,General,General,Emerging,Brazil
+General,General,General,No Market,All
+General,General,General,Emerging,Brazil
+General,General,Operations,No Market,All
+Marketing,Brand,General,No Market,All
+Marketing,Brand,General,Core,Spain
+Marketing,Customer Marketing,General,No Market,All
+Marketing,Growth,General,No Market,All
+Marketing,Organic,General,Core,Portugal
+Marketing,Organic,General,Core,France
+Marketing,Organic,General,Core,Italy
+Marketing,Organic,General,Core,Germany
+Marketing,Organic,General,Core,Spain
+Marketing,Organic,General,No Market,All
+Marketing,Organic,General,Emerging,Brazil
+Marketing,Performance,General,Core,Spain
+Marketing,Performance,General,Core,France
+Marketing,Performance,General,Core,Italy
+Marketing,Performance,General,Core,Germany
+Marketing,Product Marketing,General,No Market,All
+People,General,General,No Market,All
+People,General,General,Emerging,Brazil
+People,General,General,Emerging,LATAM
+People,IT,General,No Market,All
+People,IT,General,Emerging,Brazil
+Pre-Sales,General,Finance,Core,Italy
+Pre-Sales,General,Talent,Core,Spain
+Pre-Sales,General,Talent,No Market,All
+Product and Engineering,Data Analytics,General,No Market,All
+Product and Engineering,Engineering,Finance,No Market,All
+Product and Engineering,Engineering,Foundations,No Market,All
+Product and Engineering,Engineering,General,No Market,All
+Product and Engineering,Engineering,Operations,No Market,All
+Product and Engineering,Engineering,Platform,No Market,All
+Product and Engineering,Engineering,Talent,No Market,All
+Product and Engineering,Growth,General,No Market,All
+Product and Engineering,Product,Finance,No Market,All
+Product and Engineering,Product,Operations,No Market,All
+Product and Engineering,Product,Talent,No Market,All
+Product and Engineering,Product Design,Finance,No Market,All
+Product and Engineering,Product Design,Foundations,No Market,All
+Product and Engineering,Product Design,Operations,No Market,All
+Product and Engineering,Product Design,Platform,No Market,All
+Product and Engineering,Product Design,Talent,No Market,All
+Rev Ops,General,General,No Market,All
+Rev Ops,General,General,Emerging,Brazil
+Rev Ops,General,General,Core,Spain
+Sales,AE,Inbound,Core,Italy
+Sales,AE,Inbound,Core,France
+Sales,AE,Inbound,Core,Germany
+Sales,AE,Inbound,Core,Portugal
+Sales,AE,Inbound,Emerging,Brazil
+Sales,AE,Inbound,Core,Spain
+Sales,AE,Outbound,Core,Spain
+Sales,AE,Outbound,Core,Italy
+Sales,AE,Outbound,Emerging,Brazil
+Sales,AE,Outbound,Core,France
+Sales,AE,XL,Core,Spain
+Sales,General,General,Core,Italy
+Sales,General,General,Core,France
+Sales,General,General,No Market,All
+Sales,General,General,Core,Spain
+Sales,General,General,Core,Portugal
+Sales,General,General,Core,Germany
+Sales,LM,Outbound,Core,Spain
+Sales,LM,Outbound,Core,France
+Sales,LM,Outbound,Core,Italy
+Sales,LM,Outbound,Core,Portugal
+Sales,LM,Outbound,Core,Germany
+Sales,SDR,Inbound,Emerging,Brazil
+Sales,SDR,Inbound,Core,Italy
+Sales,SDR,Inbound - DR,Core,Italy
+Sales,SDR,Inbound - DR,Core,Spain
+Sales,SDR,Inbound - DR,Core,France
+Sales,SDR,Inbound - DR,Core,Germany
+Sales,SDR,Inbound - DR,Core,Portugal
+Sales,SDR,Inbound - Mix,Core,Portugal
+Sales,SDR,Inbound - Mix,Core,Germany
+Sales,SDR,Inbound - Postbound,Core,Spain
+Sales,SDR,Inbound - Postbound,Core,France
+Sales,SDR,Inbound - Postbound,Core,Italy
+Sales,SDR,Inbound - Postbound,Core,Portugal
+Sales,SDR,Inbound - Postbound,Core,Germany
+Sales,SDR,Outbound,Core,Spain
+Sales,SDR,Outbound,Core,France
+Sales,SDR,Outbound,Core,Italy
+Sales,SDR,Outbound,Core,Germany
+Sales,SDR,Outbound,Core,Portugal
+Strategy,General,General,No Market,All
+Pre-Sales,General,Operations,No Market,All
+Sales,AE,XL,No Market,All
+Sales,SDR,Inbound,Core,Spain
+CX,CS,Call Center,Core,Italy
+CX,CS,Call Center,Core,France
+CX,CS,Call Center,Core,Portugal
+CX,CS,Call Center,Core,Germany
+Marketing,Performance,General,Core,Portugal
+Pre-Sales,General,Talent,Core,France
+Pre-Sales,General,Talent,Core,Portugal
+Sales,AE,XL,Core,Germany
+Sales,AE,XL,Core,Italy
+CX,General,Quality,No Market,All
+Pre-Sales,General,Finance,No Market,All
+Pre-Sales,General,Talent,Core,Italy
+Sales,AE,XL,Core,France
+Sales,General,General,Emerging,Brazil
+CX,CS,Customer Support,Emerging,Brazil
+Pre-Sales,General,Talent,Core,Germany
+Product and Engineering,Product,Platform,No Market,All
+Marketing,Customer Marketing,General,Core,Italy
+Pre-Sales,General,Finance,Core,France
+Pre-Sales,General,Finance,Core,Germany
+Pre-Sales,General,Finance,Core,Portugal
+Pre-Sales,General,Operations,Core,France
+Pre-Sales,General,Operations,Core,Germany
+Pre-Sales,General,Operations,Core,Italy
+Pre-Sales,General,Operations,Core,Portugal
+Pre-Sales,General,Operations,Core,Spain
+Product and Engineering,Product,Foundations,No Market,All

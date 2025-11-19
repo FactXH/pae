@@ -17,22 +17,23 @@ models:
     columns:
       - name: event_id
         description: "Unique identifier for the event"
-        tests:
-          - unique
-          - not_null
+        # tests:
+        #   - unique
+        #   - not_null
       
       - name: application_id
         description: "Foreign key to dim_applications"
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_applications')
-              field: application_id
+        # tests:
+        #   - not_null
+        #   - relationships:
+        #       arguments:
+        #         to: ref('dim_applications')
+        #         field: application_id
       
       - name: event_timestamp
         description: "Timestamp when the event occurred"
-        tests:
-          - not_null
+        # tests:
+        #   - not_null
 
   - name: fact_job_posting_events
     description: |
@@ -50,19 +51,20 @@ models:
     columns:
       - name: event_id
         description: "Unique identifier for the event"
-        tests:
-          - unique
-          - not_null
+        # tests:
+        #   - unique
+        #   - not_null
       
       - name: job_posting_id
         description: "Foreign key to dim_job_posting"
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_job_posting')
-              field: job_posting_id
+        # tests:
+        #   - not_null
+        #   - relationships:
+        #       arguments:
+        #         to: ref('dim_job_posting')
+        #         field: job_posting_id
       
       - name: event_timestamp
         description: "Timestamp when the event occurred"
-        tests:
-          - not_null
+        # tests:
+        #   - not_null

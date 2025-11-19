@@ -710,3 +710,43 @@ from dim_employees
 where email like 'jorge.chavez%'
 GROUP BY email
 ORDER BY count DESC
+
+
+;
+
+
+
+select * from fact_exits
+where market like '%Portugal'
+;
+select distinct market from fact_exits
+
+
+;
+select distinct hiring_process_role,
+    team,
+    specific_team,
+    manager,
+    position_type,
+    opened_date,
+    closed_date,
+    talend_specialist
+from br_file_hiring_process
+where team = 'CX';
+
+
+
+select column_name, data_type from information_schema.columns
+where table_name = 'aux_match_hiring_processes_job_postings';
+
+
+
+select * from dim_job_posting;
+;
+
+
+
+select matched_job_title, hiring_process_role, seniority, team, specific_team, market, match_confidence from aux_match_hiring_processes_job_postings
+
+;
+select talend_specialist, opened_date from br_file_hiring_process

@@ -1,0 +1,52 @@
+models:
+  - name: dim_job_positions
+    description: This model contains every single job position opened in factorial. It fetches and gathers data from all the airtable tables. (FOr the moment from 2023 to 2025).
+    columns:
+      - name: xapt_position_id
+        data_type: bigint
+      - name: position_id
+        data_type: varchar
+      - name: id
+        data_type: double
+      - name: hiring_process_role
+        data_type: varchar
+      - name: seniority
+        data_type: varchar
+      - name: text_opened_on
+        data_type: date
+      - name: text_closed_on
+        data_type: date
+      - name: opened_date
+        data_type: date
+      - name: closed_date
+        data_type: date
+      - name: new_hire_name
+        data_type: varchar
+      - name: hiring_source
+        data_type: varchar
+      - name: is_closed
+        data_type: varchar
+      - name: candidate_personal_email
+        data_type: varchar
+      - name: priority
+        data_type: varchar
+      - name: talent_specialist
+        data_type: varchar
+      - name: onboarding_date
+        data_type: date
+      - name: team
+        data_type: varchar
+      - name: specific_team
+        data_type: varchar
+      - name: market
+        data_type: varchar
+      - name: position_type
+        data_type: varchar
+      - name: manager
+        data_type: varchar
+      - name: salary_range
+        data_type: varchar
+      - name: relocation_pack
+        data_type: varchar
+      - name: file_hiring_year
+        data_type: varchar

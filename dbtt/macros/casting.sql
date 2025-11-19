@@ -11,3 +11,12 @@
         ELSE NULL
     END
 {% endmacro %}
+
+{% macro cents_to_currency(expression) %}
+    CASE
+        WHEN {{ expression }} IS NOT NULL 
+             AND {{ expression }}::text ~ '^[-+]?\d+$' 
+        THEN ({{ expression }}::integer::float / 100.0)
+        ELSE NULL
+    END
+{% endmacro %}

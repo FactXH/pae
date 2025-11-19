@@ -22,6 +22,9 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
+# Enable PostgreSQL extensions before running models
+on-run-start:
+  - "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

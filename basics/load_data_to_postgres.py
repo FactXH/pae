@@ -495,7 +495,7 @@ def load_ats_factorial_tables():
     tables = ['ats_hiring_phases', 'ats_application_phases', 'ats_applications']
     tables = []
     deddup_tables = ['ats_job_postings', 'ats_candidates', 'ats_hiring_phases', 'ats_application_phases', 'ats_applications']
-    deddup_tables = ['ats_candidate_sources', 'ats_rejection_reasons']
+    deddup_tables = ['ats_candidate_sources', 'ats_rejection_reasons', 'ats_hiring_managers', 'ats_hiring_phases']
     for table in tables:
         loader = Loader()
         loader.load_from_athena(table)
@@ -567,11 +567,12 @@ def main():
     # build_manager_table()
     # load_basics_tables()
     # load_hiring_processes()
-    load_job_postings_status()
+    # load_job_postings_status()
     # load_ats_application_steps()
     # load_levels()
     # load_climate_answers()
     # load_performace()
+    load_ats_factorial_tables()
 
 if __name__ == "__main__":
     main()

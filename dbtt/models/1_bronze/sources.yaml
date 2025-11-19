@@ -88,6 +88,9 @@ sources:
       - name: athena_ats_candidates
         description: "Raw table containing ATS candidates data imported into Athena."
 
+      - name: athena_ats_job_postings_dedup
+        description: "Raw table containing ATS jobs data imported into Athena."
+
       - name: athena_ats_job_postings
         description: "Raw table containing ATS jobs data imported into Athena."
 
@@ -102,3 +105,6 @@ sources:
 
       - name: athena_ats_candidate_sources
         description: "Raw table containing ATS candidate sources data imported into Athena."
+
+      - name: athena_ats_hiring_managers_dedup
+        description: "Raw table containing hiring managers data imported into Athena."

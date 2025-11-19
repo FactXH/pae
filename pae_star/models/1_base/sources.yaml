@@ -1,0 +1,125 @@
+version: 2
+
+sources:
+  - name: athena
+    database: factorial_datalake_production
+    schema: data_lake_bronze
+    tables:
+      - name: airbyte_airtable_people_people_todos_sync_view_tblmwfnk5fykznky7
+        description: "Raw Airtable todos table imported from Airtable conected to athena via airbyte"
+
+      - name: employees
+        description: "Raw table that comes from the factorial employee tables."
+
+      - name: teams
+        description: "Raw table that comes from the factorial teams tables."
+
+      - name: memberships
+        description: "Raw table that comes from the factorial memberships tables."
+
+      - name: contracts_contract_versions
+        description: "Raw table that comes from the factorial contracts tables."
+
+      - name: job_catalog_roles
+        description: "Raw table that comes from the factorial job catalog roles tables."
+
+      - name: job_catalog_levels
+        description: "Raw table that comes from the factorial job catalog levels tables."
+
+      - name: employees_performance_scores
+        description: "Raw table that comes from the factorial employees performance scores tables."
+
+      - name: climate_survey_responses_v3
+        description: "Raw table that comes from the factorial climate survey responses tables."
+
+  # - name: files
+  #   database: pae
+  #   schema: public
+  #   tables:
+  #     - name: file_hiring_process_2024
+  #       description: "Uploaded file containing hiring process 2024 data from airtable."
+  #       columns:
+  #         - name: name
+  #           description: "Exemple de documentació :)."
+
+  #     - name: file_hiring_process_2025
+  #       description: "Uploaded file containing hiring process 2025 data from airtable."
+
+  #     - name: file_hiring_process_2023
+  #       description: "Uploaded file containing hiring process 2023 data from airtable."
+
+  #     - name: file_hiring_process_2022
+  #       description: "Uploaded file containing hiring process 2022 data from airtable."
+
+  #     - name: file_offer_letters
+  #       description: "Uploaded file containing offer letters data from airtable."
+
+  #     - name: file_manager_assessment_raw_data
+  #       description: "Uploaded file containing managers assessment responses from google forms."
+
+
+  - name: performance
+    database: factorial_datalake_production
+    schema: data_lake_bronze
+    tables:
+    - name: performance_scores
+      description: "Raw table containing performance scores data imported into Athena."
+    
+    - name: performance_review_processes
+      description: "Raw table containing performance review process definitions imported into Athena."
+
+    - name: performance_review_process_targets
+      description: "Raw table of targets/goals associated with performance review processes."
+
+    - name: performance_reviews_evaluations
+      description: "Raw table with individual evaluation records for performance reviews."
+
+    - name: performance_review_final_employee_scores
+      description: "Raw table with final aggregated employee scores from performance reviews."
+      
+    - name: performance_review_employee_scores
+      description: "Raw table with granular employee score items from performance reviews."
+
+  
+  - name: factorial_ats
+    database: factorial_datalake_production
+    schema: data_lake_bronze
+    tables:
+      - name: ats_applications
+        description: "Raw table containing ATS applications data imported into Athena."
+
+      - name: ats_candidates
+        description: "Raw table containing ATS candidates data imported into Athena."
+
+      - name: ats_job_postings
+        description: "Raw table containing ATS jobs data imported into Athena."
+
+      - name: ats_rejection_reasons
+        description: "Raw table containing ATS rejection reasons data imported into Athena."
+
+      - name: ats_application_phases
+        description: "Raw table containing ATS application phases data imported into Athena."
+
+      - name: ats_hiring_stages
+        description: "Raw table containing ATS hiring stages data imported into Athena."
+
+      - name: ats_offer_letters
+        description: "Raw table containing ATS offer letters data imported into Athena."
+
+      - name: ats_candidate_sources
+        description: "Raw table containing ATS candidate sources data imported into Athena."
+
+      - name: ats_hiring_managers
+        description: "Raw table containing hiring managers data imported into Athena."
+
+      - name: airbyte_airtable_recruitment_2025_tblprsagyxeegmnpl
+        description: "Raw Airtable recruitment 2025 table imported from Airtable conected to athena via airbyte"
+
+      - name: airbyte_airtable_recruitment_2024_tblld6hnk2b5lwzcm
+        description: "Raw airtable recruitment 202n yeyeyey"
+
+      - name: airbyte_airtable_recruitment_2023_tbldkfmlloxr6rj8z
+        description: "Raw airtable recruitment 202n yeyeyey"
+
+      - name: airbyte_airtable_recruitment_2022_tbl0mlnobj9gg8c0v
+        description: "Raw airtable recruitment 202n yeyeyey"

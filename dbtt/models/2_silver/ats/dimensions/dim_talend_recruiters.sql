@@ -1,5 +1,5 @@
 with br_file_hiring_process as (
-    select * from {{ ref("br_file_hiring_process") }}
+    select * from {{ ref("br_file_hiring_processes") }}
 ),
 
 distinct_talend_specialist as (

@@ -1,7 +1,11 @@
 
 # Import the Athena query function from aws_client
 from utils.clients.aws_client import query_athena
+from typing import List, Optional
+import pandas as pd
+import os
 
+from dotenv import load_dotenv
 
 class QueryRunner:
     def __init__(self):
@@ -55,5 +59,127 @@ class QueryRunner:
                 return df
             else:
                 return {'columns': list(df.columns), 'results': df.values.tolist()}
+        elif source == 'galaxy':
+            import trino
+            import pandas as pd
+            
+            load_dotenv()
+            # Get credentials from environment variables
+            galaxy_username = os.getenv('galaxy_username')
+            galaxy_password = os.getenv('galaxy_password')
+            
+            if not galaxy_username or not galaxy_password:
+                raise ValueError("GALAXY_USERNAME and GALAXY_PASSWORD environment variables must be set")
+            
+            # Trino connection parameters
+            trino_host = kwargs.get('host', 'factorial-dbt-test-cluster.trino.galaxy.starburst.io')
+            trino_port = kwargs.get('port', 443)
+            trino_catalog = kwargs.get('catalog', 'factorial_datalake_production')
+            trino_schema = kwargs.get('schema', 'data_lake_dev_xavi_silver')
+            
+            print(f"🔍 Connecting to Trino (Galaxy) at https://{trino_host}:{trino_port}")
+            
+            # Use direct trino connection
+            conn = trino.dbapi.connect(
+                host=trino_host,
+                port=trino_port,
+                user=galaxy_username,
+                http_scheme='https',
+                auth=trino.auth.BasicAuthentication(galaxy_username, galaxy_password),
+                catalog=trino_catalog,
+                schema=trino_schema
+            )
+            
+            try:
+                print(f"🔍 Executing Trino query: {query}")
+                cur = conn.cursor()
+                cur.execute(query)
+                
+                # Fetch column names and data
+                columns = [desc[0] for desc in cur.description]
+                rows = cur.fetchall()
+                
+                # Create DataFrame
+                df = pd.DataFrame(rows, columns=columns)
+                print(f"📊 Retrieved {len(df)} rows")
+            except Exception as e:
+                print(f"❌ Error executing Trino query: {e}")
+                raise
+            finally:
+                conn.close()
+            
+            if dataframe:
+                return df
+            else:
+                return {'columns': list(df.columns), 'results': df.values.tolist()}
         else:
             raise ValueError(f"Unknown source: {source}")
+    
+    def run_fuzzy_match(
+        self,
+        source_query: str,
+        target_query: str,
+        match_configs: List,
+        source: str = 'postgres',
+        score_threshold: float = 60.0,
+        return_top_n: int = 1,
+        **kwargs
+    ) -> pd.DataFrame:
+        """
+        Run fuzzy matching between results of two queries
+        
+        Args:
+            source_query: SQL query to fetch source records
+            target_query: SQL query to fetch target records
+            match_configs: List of MatchConfig objects for FuzzyMatcher
+            source: Database source ('postgres' or 'athena')
+            score_threshold: Minimum match score (0-100)
+            return_top_n: Number of top matches per source record
+            **kwargs: Additional arguments for run_query
+            
+        Returns:
+            DataFrame with fuzzy match results
+            
+        Example:
+            from utils.data_matcher.matcher import MatchConfig
+            from rapidfuzz import fuzz
+            
+            qr = QueryRunner()
+            matches = qr.run_fuzzy_match(
+                source_query="SELECT * FROM positions",
+                target_query="SELECT * FROM postings",
+                match_configs=[
+                    MatchConfig('title', 'job_title', weight=0.7, scorer=fuzz.token_sort_ratio),
+                    MatchConfig('team', 'team_name', weight=0.3)
+                ],
+                score_threshold=70.0,
+                return_top_n=3
+            )
+        """
+        from utils.data_matcher.matcher import FuzzyMatcher
+
+        
+        print(f"🔍 Fetching source records...")
+        source_df = self.run_query(source_query, source=source, dataframe=True, **kwargs)
+        print(f"✅ Loaded {len(source_df)} source records")
+        
+        print(f"🔍 Fetching target records...")
+        target_df = self.run_query(target_query, source=source, dataframe=True, **kwargs)
+        print(f"✅ Loaded {len(target_df)} target records")
+        
+        print(f"⚙️ Initializing fuzzy matcher...")
+        matcher = FuzzyMatcher(
+            match_configs=match_configs,
+            score_threshold=score_threshold,
+            combine_method='weighted'
+        )
+        
+        print(f"🎯 Performing fuzzy matching...")
+        matches_df = matcher.match(
+            source_df=source_df,
+            target_df=target_df,
+            return_top_n=return_top_n
+        )
+        
+        print(f"✅ Generated {len(matches_df)} matches")
+        return matches_df

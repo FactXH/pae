@@ -1,3 +1,5 @@
+
+
 {% macro dedup_not_deleted_source(source_name, source_table, cte_name=None) %}
 {%- set cte_name = cte_name if cte_name is not none else 'dedup_' ~ source_table -%}
 source_data as (
