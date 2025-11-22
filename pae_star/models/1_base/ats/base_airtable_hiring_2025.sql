@@ -9,7 +9,7 @@ deduped as (
     from hp_2025
 )
 
-select 
+select
     id,
     name as hiring_process_role,
     seniority,

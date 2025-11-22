@@ -14,6 +14,7 @@ with dim_employees as (
         athena_manager_id,
         athena_manager_email,
         airtable_manager_email,
+        airtable_main_team,
         is_active
     from {{ ref("dim_employees") }}
 ),
@@ -87,6 +88,38 @@ current_teams_aggregated as (
     group by mem.employee_id
 ),
 
+salary_changes_2025 as (
+    select 
+        cont.employee_id,
+        count(distinct cont.salary_amount) as distinct_salaries_2025,
+        case 
+            when min(cont.salary_amount) > 0 then
+                round(((max(cont.salary_amount) - min(cont.salary_amount)) / min(cont.salary_amount)) * 100, 2)
+            else null
+        end as salary_increase_pct_2025
+    from {{ ref("dim_contracts") }} cont
+    where 
+        -- Contract was active at least one day in 2025
+        (cont.effective_date <= date '2025-12-31' 
+         and (cont.effective_to_date >= date '2025-01-01' or cont.effective_to_date is null))
+    group by cont.employee_id
+),
+
+roles_2025 as (
+    select 
+        cont.employee_id,
+        array_join(array_agg(distinct job_catalog.role_level_name order by job_catalog.role_level_name), ' / ') as roles_2025
+    from {{ ref("dim_contracts") }} cont
+    left join {{ ref("dim_job_catalog") }} job_catalog
+        on job_catalog.job_catalog_level_id = cont.job_catalog_level_id
+    where 
+        -- Contract was active at least one day in 2025
+        (cont.effective_date <= date '2025-12-31' 
+         and (cont.effective_to_date >= date '2025-01-01' or cont.effective_to_date is null))
+        and job_catalog.role_level_name is not null
+    group by cont.employee_id
+),
+
 base_employees as (
     select 
         emp.*,
@@ -108,7 +141,14 @@ base_employees as (
         agg_contract.nr_contracts,
         
         -- Current teams information
-        teams.all_current_teams
+        teams.all_current_teams,
+        
+        -- 2025 salary changes
+        sal_2025.distinct_salaries_2025,
+        sal_2025.salary_increase_pct_2025,
+        
+        -- 2025 roles
+        roles_2025.roles_2025
         
     from dim_employees emp
     left join first_contracts first_contract
@@ -119,6 +159,10 @@ base_employees as (
         on cast(agg_contract.employee_id as varchar) = emp.employee_id
     left join current_teams_aggregated teams
         on cast(teams.employee_id as varchar) = emp.employee_id
+    left join salary_changes_2025 sal_2025
+        on cast(sal_2025.employee_id as varchar) = emp.employee_id
+    left join roles_2025
+        on cast(roles_2025.employee_id as varchar) = emp.employee_id
 )
 
 select

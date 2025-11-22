@@ -43,22 +43,11 @@ class SimpleMatcher:
             # Exclude market if it's "general" since it never appears in job posting titles
             market_text = '' if pos_market == 'general' else pos_market
             
-            # If 'engineer' in role, include specific_team in title comparison
-            role_lower = str(pos.get('hiring_process_role', '')).lower()
-            specific_team_text = str(pos.get('specific_team', '')).lower() if pos.get('specific_team') else ''
-            if 'engineer' in role_lower and specific_team_text:
-                pos_text = (
-                    str(pos.get('hiring_process_role', '')).lower() + ' ' +
-                    market_text + ' ' +
-                    str(pos.get('seniority', '')).lower() + ' ' +
-                    specific_team_text
-                ).strip()
-            else:
-                pos_text = (
-                    str(pos.get('hiring_process_role', '')).lower() + ' ' +
-                    market_text + ' ' +
-                    str(pos.get('seniority', '')).lower()
-                ).strip()
+            pos_text = (
+                str(pos.get('hiring_process_role', '')).lower() + ' ' +
+                market_text + ' ' +
+                str(pos.get('seniority', '')).lower()
+            ).strip()
             
             position_matches = []
             
@@ -94,21 +83,6 @@ class SimpleMatcher:
                     if team_similarity >= 70:
                         final_score += 10  # Add a bonus for strong team match
 
-                # Manager matching
-                manager = pos.get('manager') or pos.get('hiring_process_manager')
-                owner_emails = str(posting.get('owner_emails') or '')
-                reviewer_emails = str(posting.get('reviewer_emails') or '')
-                editor_emails = str(posting.get('editor_emails') or '')
-                other_emails = str(posting.get('other_hiring_manager_emails') or '')
-                manager_concat = ' '.join([owner_emails, reviewer_emails, editor_emails, other_emails]).strip()
-                manager_match_flag = False
-                manager_score = 0
-                if manager and manager_concat:
-                    manager_score = fuzz.partial_ratio(manager.lower(), manager_concat.lower())
-                    if manager_score >= 80:
-                        final_score += 15
-                        manager_match_flag = True
-
                 if final_score >= self.min_score:
                     position_matches.append({
                         # Position fields
@@ -120,19 +94,15 @@ class SimpleMatcher:
                         'talent_specialist': pos.get('talent_specialist') or pos.get('hiring_process_talent_specialist'),
                         'opened_date': pos.get('opened_date'),
                         'position_id': pos.get('position_id'),
-                        'manager': manager,
                         # Posting fields
                         'job_posting_id': posting['job_posting_id'],
                         'title': posting['title'],
                         'team_name': posting['team_name'],
-                        'manager_concat': manager_concat,
                         # Scores
                         'text_score': round(text_score, 2),
                         'market_score': round(market_score, 2),
                         'team_similarity': round(team_similarity, 2),
-                        'manager_score': round(manager_score, 2),
                         'final_score': round(final_score, 2),
-                        'manager_match_flag': manager_match_flag,
                     })
             # If no matches found for this position, add it with empty match fields
             if not position_matches:

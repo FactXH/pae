@@ -53,7 +53,7 @@ select
     app.ats_application_phase_id,
     app.application_created_at,
     app.application_updated_at,
-    app.application_disqualified_reason as rejection_reason,
+    -- app.application_disqualified_reason as rejection_reason, -- removed duplicate
     app.application_cover_letter,
     app.application_phone,
     app.application_source,

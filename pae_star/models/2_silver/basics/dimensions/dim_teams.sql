@@ -73,4 +73,4 @@ left join teams_with_children twc
     on twp.team_id = twc.team_id
 left join engineering_team eng
     on twp.parent_team_id is null and LOWER(twp.team_name) like '%squad%'
-order by twp.team_level, twp.team_name    
+order by twp.team_level, twp.team_name

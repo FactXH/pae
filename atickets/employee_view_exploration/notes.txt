@@ -1,0 +1,9 @@
+analytics-workflow
+
+Find talend_product i crear el job nuevo ahi.
+
+
+
+[{"type":"section","uuid":"8a3d44a3-d02a-5f1c-ab4e-0d57cd589df0","title":"Overall performance","metadata":{},"questions":[{"type":"answered_question","answer":{"value":2,"comment":"<p>Values 2.4 / Results 2.5</p>"},"question":{"type":"question","uuid":"70aecd72-ffb5-5b39-be9e-30ecfd8e8347","label":{"manager":"How would you evaluate this person's performance during this review period?"},"scale":{"1":"Needs improvement","2":"Room for growth","3":"Meets expectations","4":"Exceeds expectations","5":"Outstanding"},"metadata":{},"mandatory":true,"answer_type":"rating","description":null,"with_comment":true}}]}]
+[{"type":"section","uuid":"8a3d44a3-d02a-5f1c-ab4e-0d57cd589df0","title":"Overall performance","metadata":{},"questions":[{"type":"answered_question","answer":{"value":2,"comment":"<p>Values 2.4 / Results 2.5</p>"},"question":{"type":"question","uuid":"70aecd72-ffb5-5b39-be9e-30ecfd8e8347","label":{"manager":"How would you evaluate this person's performance during this review period?"},"scale":{"1":"Needs improvement","2":"Room for growth","3":"Meets expectations","4":"Exceeds expectations","5":"Outstanding"},"metadata":{},"mandatory":true,"answer_type":"rating","description":null,"with_comment":true}}]}][{"type":"section","uuid":"8a3d44a3-d02a-5f1c-ab4e-0d57cd589df0","title":"Overall performance","metadata":{},"questions":[{"type":"answered_question","answer":null,"question":{"type":"question","uuid":"70aecd72-ffb5-5b39-be9e-30ecfd8e8347","label":{"manager":
+"How would you evaluate this person's performance during this review period?"},"scale":{"1":"Needs improvement","2":"Room for growth","3":"Meets expectations","4":"Exceeds expectations","5":"Outstanding"},"metadata":{},"mandatory":true,"answer_type":"rating","description":null,"with_comment":true}}]}]

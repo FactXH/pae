@@ -17,6 +17,7 @@ airtable_employees as (
         at_emp.last_name,
         CONCAT(at_emp.first_name, ' ', at_emp.last_name) as full_name,
         at_emp.email,
+        at_emp.main_team,
         at_emp.onboarding_date,
         at_emp.offboarding_date,
         at_emp.airtable_manager_email
@@ -51,7 +52,8 @@ base_employees as (
         athena.manager_id as athena_manager_id,
         manager_employee.full_name as athena_manager_full_name,
         manager_employee.email as athena_manager_email,
-        airt.airtable_manager_email
+        airt.airtable_manager_email,
+        airt.main_team as airtable_main_team
 
     from athena_employees athena
     full outer join airtable_employees airt
