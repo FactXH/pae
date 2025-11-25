@@ -1,29 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Typography, Paper, Grid, Box, Card, CardContent, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import TableRowsIcon from '@mui/icons-material/TableRows';
-import BubbleChartIcon from '@mui/icons-material/BubbleChart';
-// import OverviewFilters from '../../components/OverviewFilters'; // Old version
-import OverviewFiltersV2 from '../../components/OverviewFiltersV2'; // New floating version
+import { Typography, Paper, Grid, Box, Card, CardContent } from '@mui/material';
+import OverviewFiltersV2 from '../../components/OverviewFiltersV2';
 import HeadcountTable from '../../components/HeadcountTable';
 import HeadcountTimeline from '../../components/HeadcountTimeline';
 import CurrentTeams from '../../components/CurrentTeams';
-import EmployeeOverview from '../../components/EmployeeOverview';
-import TeamBubbleChart from '../../components/TeamBubbleChart';
 import { mockEmployeeData } from '../../data/mockEmployeeData';
-import './Overview.css';
 
-function Overview() {
+function WhiteboardProd() {
   const [activeFilters, setActiveFilters] = useState({});
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'bubble'
 
   const handleFilterChange = (newFilters) => {
     setActiveFilters(newFilters);
-  };
-
-  const handleViewModeChange = (event, newMode) => {
-    if (newMode !== null) {
-      setViewMode(newMode);
-    }
   };
 
   // Calculate metrics based on filtered data
@@ -105,13 +92,12 @@ function Overview() {
 
   return (
     <div className="analytics-subsection">
-      {/* <Typography variant="h4" component="h2" gutterBottom>
-        Analytics Overview
-      </Typography> */}
-
-      {/* <Typography variant="body1" paragraph>
-        High-level view of key metrics across all areas.
-      </Typography> */}
+      <Typography variant="h5" gutterBottom>
+        Production Whiteboard
+      </Typography>
+      <Typography variant="body2" color="text.secondary" paragraph>
+        Production-ready components and visualizations
+      </Typography>
 
       {/* Filters - New Floating Version */}
       <OverviewFiltersV2 
@@ -122,32 +108,6 @@ function Overview() {
       {/* Current Teams */}
       <Box mt={3} mb={3}>
         <CurrentTeams />
-      </Box>
-
-      {/* Employee Overview */}
-      <Box mt={3} mb={3}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">
-            Team Organization View
-          </Typography>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={handleViewModeChange}
-            size="small"
-            color="primary"
-          >
-            <ToggleButton value="table">
-              <TableRowsIcon sx={{ mr: 1 }} />
-              Table View
-            </ToggleButton>
-            <ToggleButton value="bubble">
-              <BubbleChartIcon sx={{ mr: 1 }} />
-              Bubble Chart
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-        {viewMode === 'table' ? <EmployeeOverview /> : <TeamBubbleChart />}
       </Box>
 
       {/* Headcount Timeline Chart */}
@@ -169,4 +129,4 @@ function Overview() {
   );
 }
 
-export default Overview;
+export default WhiteboardProd;

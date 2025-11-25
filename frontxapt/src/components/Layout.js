@@ -1,9 +1,27 @@
 import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Container, Box, Button } from '@mui/material';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { AppBar, Toolbar, Typography, Container, Box, Button, Menu, MenuItem } from '@mui/material';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import './Layout.css';
 
 function Layout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sqlEditorAnchor, setSqlEditorAnchor] = React.useState(null);
+
+  const handleSqlEditorClick = (event) => {
+    setSqlEditorAnchor(event.currentTarget);
+  };
+
+  const handleSqlEditorClose = () => {
+    setSqlEditorAnchor(null);
+  };
+
+  const handleVersionSelect = (version) => {
+    navigate(`/sql-editor?v=${version}`);
+    handleSqlEditorClose();
+  };
+
   return (
     <div className="layout">
       <AppBar position="static">
@@ -20,6 +38,25 @@ function Layout() {
           <Button color="inherit" component={Link} to="/analytics">
             Analytics
           </Button>
+          <Button
+            color="inherit"
+            onClick={handleSqlEditorClick}
+            endIcon={<ArrowDropDownIcon />}
+          >
+            SQL Editor
+          </Button>
+          <Menu
+            anchorEl={sqlEditorAnchor}
+            open={Boolean(sqlEditorAnchor)}
+            onClose={handleSqlEditorClose}
+          >
+            <MenuItem onClick={() => handleVersionSelect('v1')}>
+              SQL Editor V1 (Classic)
+            </MenuItem>
+            <MenuItem onClick={() => handleVersionSelect('v2')}>
+              SQL Editor V2 (Tabs)
+            </MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 

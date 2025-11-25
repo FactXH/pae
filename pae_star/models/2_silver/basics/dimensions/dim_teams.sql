@@ -68,39 +68,65 @@ teams_with_children as (
     group by t1.team_id
 ),
 
--- Get Engineering team ID for Squad teams without parent
+-- Get Engineering team ID for top-level Squad teams
 engineering_team as (
     select team_id, team_name
     from source
     where team_name = 'Engineering'
+),
+
+-- Identify which Squad teams should get Engineering as parent
+-- Only Squad teams that: 1) have no natural parent, AND 2) are not sub-squads (don't have another Squad as prefix)
+squads_needing_engineering as (
+    select 
+        twcl.team_id,
+        twcl.team_name,
+        twcl.parent_team_id,
+        -- Check if this squad's name (after "Squad/") could be a child of another squad
+        -- by looking for existing Squad teams that would be its natural parent
+        case 
+            when exists (
+                select 1 
+                from teams_with_calculated_level potential_parent
+                where potential_parent.team_name like 'Squad/%'
+                    and twcl.team_name like potential_parent.team_name || '/%'
+                    and potential_parent.team_id != twcl.team_id
+            ) then false
+            else true
+        end as should_use_engineering
+    from teams_with_calculated_level twcl
+    where twcl.parent_team_id is null 
+        and twcl.team_name like 'Squad/%'
 )
 
 select 
     twcl.team_id,
     twcl.team_name,
     case 
-        when twcl.parent_team_id is null and LOWER(twcl.team_name) like '%squad%' then twcl.calculated_level + 1
+        when sne.should_use_engineering then twcl.calculated_level + 1
         else twcl.calculated_level
     end as team_level,
     twcl.team_type,
     case 
-        when twcl.parent_team_id is null and LOWER(twcl.team_name) like '%squad%' then eng.team_id
+        when sne.should_use_engineering then eng.team_id
         else twcl.parent_team_id
     end as parent_team_id,
     case 
-        when twcl.parent_team_id is null and LOWER(twcl.team_name) like '%squad%' then eng.team_name
+        when sne.should_use_engineering then eng.team_name
         else twcl.parent_team_name
     end as parent_team_name,
     case when twc.child_count = 0 then true else false end as is_last_team
 from teams_with_calculated_level twcl
 left join teams_with_children twc
     on twcl.team_id = twc.team_id
+left join squads_needing_engineering sne
+    on twcl.team_id = sne.team_id
 left join engineering_team eng
-    on twcl.parent_team_id is null and LOWER(twcl.team_name) like '%squad%'
+    on sne.should_use_engineering = true
 where twcl.team_type = 'Team'
 order by 
     case 
-        when twcl.parent_team_id is null and LOWER(twcl.team_name) like '%squad%' then twcl.calculated_level + 1
+        when sne.should_use_engineering then twcl.calculated_level + 1
         else twcl.calculated_level
     end, 
     twcl.team_name

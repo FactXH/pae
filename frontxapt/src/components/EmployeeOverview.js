@@ -21,7 +21,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid
+  Grid,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import { ExpandMore, ChevronRight, PeopleIcon } from '@mui/icons-material';
 import PersonIcon from '@mui/icons-material/Person';
@@ -42,6 +44,7 @@ function EmployeeOverview() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const [marketFilter, setMarketFilter] = useState('all');
+  const [showInactive, setShowInactive] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -332,26 +335,20 @@ function EmployeeOverview() {
           </TableCell>
           <TableCell align="center" sx={{ width: '15%' }}>
             <Chip 
-              label={hasHiddenEmployees ? `${grandTotal} (${team.total_employees})` : team.total_employees}
-              size="small"
-              color="default"
-              variant="outlined"
-            />
-          </TableCell>
-          <TableCell align="center" sx={{ width: '15%' }}>
-            <Chip 
               label={hasHiddenEmployees ? `${grandActive} (${team.active_employees})` : team.active_employees}
               size="small"
               color="success"
             />
           </TableCell>
-          <TableCell align="center" sx={{ width: '15%' }}>
-            <Chip 
-              label={hasHiddenEmployees ? `${grandInactive} (${team.inactive_employees})` : team.inactive_employees}
-              size="small"
-              color="warning"
-            />
-          </TableCell>
+          {showInactive && (
+            <TableCell align="center" sx={{ width: '15%' }}>
+              <Chip 
+                label={hasHiddenEmployees ? `${grandInactive} (${team.inactive_employees})` : team.inactive_employees}
+                size="small"
+                color="warning"
+              />
+            </TableCell>
+          )}
           <TableCell align="center" sx={{ width: '5%' }}>
             {teamEmployees.length > 0 && (
               <Tooltip 
@@ -373,7 +370,7 @@ function EmployeeOverview() {
         {/* Employee details row */}
         {showEmployees && teamEmployees.length > 0 && (
           <TableRow>
-            <TableCell colSpan={5} sx={{ py: 0, backgroundColor: '#fafafa' }}>
+            <TableCell colSpan={showInactive ? 4 : 3} sx={{ py: 0, backgroundColor: '#fafafa' }}>
               <Collapse in={showEmployees} timeout="auto">
                 <Box sx={{ py: 2, pl: `${indent + 80}px`, pr: 2 }}>
                   <Typography variant="subtitle2" gutterBottom color="primary">
@@ -475,28 +472,22 @@ function EmployeeOverview() {
           </TableCell>
           <TableCell align="center" sx={{ width: '15%' }}>
             <Chip 
-              label={market.total_employees}
-              size="small"
-              color="default"
-              variant="outlined"
-            />
-          </TableCell>
-          <TableCell align="center" sx={{ width: '15%' }}>
-            <Chip 
               label={market.active_employees}
               size="small"
               color="success"
               variant="outlined"
             />
           </TableCell>
-          <TableCell align="center" sx={{ width: '15%' }}>
-            <Chip 
-              label={market.inactive_employees}
-              size="small"
-              color="warning"
-              variant="outlined"
-            />
-          </TableCell>
+          {showInactive && (
+            <TableCell align="center" sx={{ width: '15%' }}>
+              <Chip 
+                label={market.inactive_employees}
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            </TableCell>
+          )}
           <TableCell align="center" sx={{ width: '5%' }}>
             <Tooltip 
               title={showEmployees ? "Hide employees" : "Show employees"}
@@ -516,7 +507,7 @@ function EmployeeOverview() {
         {/* Market employee details row */}
         {showEmployees && (
           <TableRow>
-            <TableCell colSpan={5} sx={{ py: 0, backgroundColor: '#f0f4ff' }}>
+            <TableCell colSpan={showInactive ? 4 : 3} sx={{ py: 0, backgroundColor: '#f0f4ff' }}>
               <Collapse in={showEmployees} timeout="auto">
                 <Box sx={{ py: 2, pl: `${indent + 80}px`, pr: 2 }}>
                   <Typography variant="subtitle2" gutterBottom color="info.main">
@@ -677,6 +668,19 @@ function EmployeeOverview() {
               </Select>
             </FormControl>
           </Grid>
+          
+          <Grid item xs={12} sm={6} md={2.4}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showInactive}
+                  onChange={(e) => setShowInactive(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Show Inactive"
+            />
+          </Grid>
         </Grid>
       </Paper>
 
@@ -730,10 +734,11 @@ function EmployeeOverview() {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'action.hover' }}>
                   <TableCell sx={{ fontWeight: 'bold' }}>Team Hierarchy</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Total</TableCell>
                   <TableCell align="center" sx={{ fontWeight: 'bold' }}>Active</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Inactive</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Details</TableCell>
+                  {showInactive && (
+                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>Inactive</TableCell>
+                  )}
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

@@ -15,8 +15,8 @@ function Analytics() {
     if (location.pathname.includes('/analytics/managers')) return '/analytics/managers';
     if (location.pathname.includes('/analytics/equality')) return '/analytics/equality';
     if (location.pathname.includes('/analytics/climate-2025')) return '/analytics/climate-2025';
-    if (location.pathname.includes('/analytics/query-view')) return '/analytics/query-view';
-    if (location.pathname.includes('/analytics/saved-queries')) return '/analytics/saved-queries';
+    if (location.pathname.includes('/analytics/whiteboard-prod')) return '/analytics/whiteboard-prod';
+    if (location.pathname.includes('/analytics/whiteboard-dev')) return '/analytics/whiteboard-dev';
     if (location.pathname.includes('/analytics/overview')) return '/analytics/overview';
     return '/analytics/overview'; // default
   };
@@ -71,16 +71,16 @@ function Analytics() {
             to="/analytics/engagement"
           />
           <Tab 
-            label="Query View" 
-            value="/analytics/query-view"
+            label="Whiteboard Prod" 
+            value="/analytics/whiteboard-prod"
             component={NavLink}
-            to="/analytics/query-view"
+            to="/analytics/whiteboard-prod"
           />
           <Tab 
-            label="Saved Queries" 
-            value="/analytics/saved-queries"
+            label="Whiteboard Dev" 
+            value="/analytics/whiteboard-dev"
             component={NavLink}
-            to="/analytics/saved-queries"
+            to="/analytics/whiteboard-dev"
           />
         </Tabs>
       </Paper>
