@@ -123,3 +123,32 @@ sources:
 
       - name: airbyte_airtable_recruitment_2022_tbl0mlnobj9gg8c0v
         description: "Raw airtable recruitment 202n yeyeyey"
+
+
+  - name: engagement
+    database: factorial_datalake_production
+    schema: data_lake_bronze
+    tables:
+      - name: surveys_forms
+        description: "Raw table containing survey forms data."
+
+      - name: surveys_question_group_configs
+        description: "Raw table containing survey question group configurations."
+
+      - name: surveys_groups
+        description: "Raw table containing survey groups data."
+
+      - name: surveys_question_groups
+        description: "Raw table containing survey question groups."
+
+      - name: surveys_question_configs
+        description: "Raw table containing survey question configurations."
+
+      - name: custom_fields_fields
+        description: "Raw table containing custom fields definitions."
+
+      - name: custom_fields_values
+        description: "Raw table containing custom field values."
+
+      - name: custom_fields_resource_fields
+        description: "Raw table mapping custom fields to resources."

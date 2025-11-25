@@ -38,6 +38,9 @@ models:
     2_silver:
       +materialized: table
       +schema: silver
+    3_gold:
+      +materialized: table
+      +schema: gold
 
 
 seeds:

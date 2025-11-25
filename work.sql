@@ -749,4 +749,20 @@ select * from dim_job_posting;
 select matched_job_title, hiring_process_role, seniority, team, specific_team, market, match_confidence from aux_match_hiring_processes_job_postings
 
 ;
-select talend_specialist, opened_date from br_file_hiring_process
+select talend_specialist, opened_date from br_file_hiring_process;
+
+
+
+select question_respondent_access_id from data_lake_dev_xavi_silver.base_factorial_climate_2025_answers
+;
+
+
+select distinct label_text from data_lake_dev_xavi_silver.base_factorial_climate_2025_answers
+;
+
+
+select full_name, label_text, coalesce(long_text_value, cast(number_value as varchar), single_choice_value) as answer, * 
+from data_lake_dev_xavi_silver.base_factorial_climate_2025_answers climate
+left join data_lake_dev_xavi_silver.fact_employees fe
+on climate.question_respondent_access_id = fe.access_id
+where full_name like 'David Ca%'

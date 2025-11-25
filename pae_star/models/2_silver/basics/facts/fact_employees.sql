@@ -88,6 +88,34 @@ current_teams_aggregated as (
     group by mem.employee_id
 ),
 
+-- Get the most granular team (lowest level) for each employee
+lowest_level_team as (
+    select 
+        employee_id,
+        team_name as lowest_level_team_name,
+        team_level as lowest_level_team_level,
+        parent_team_name as lowest_level_parent_team_name
+    from (
+        select 
+            mem.employee_id,
+            teams.team_name,
+            teams.team_level,
+            teams.parent_team_name,
+            row_number() over (
+                partition by mem.employee_id 
+                order by 
+                    teams.team_level desc, 
+                    case when teams.team_name = 'Engineering' then 1 else 0 end asc,
+                    teams.team_name asc
+            ) as rn
+        from {{ ref("dim_memberships_scd") }} mem
+        left join {{ ref("dim_teams") }} teams
+            on mem.team_id = teams.team_id
+        where mem.is_current = true
+    ) ranked
+    where rn = 1
+),
+
 salary_changes_2025 as (
     select 
         cont.employee_id,
@@ -143,6 +171,11 @@ base_employees as (
         -- Current teams information
         teams.all_current_teams,
         
+        -- Lowest level (most granular) team
+        lowest_team.lowest_level_team_name,
+        lowest_team.lowest_level_team_level,
+        lowest_team.lowest_level_parent_team_name,
+        
         -- 2025 salary changes
         sal_2025.distinct_salaries_2025,
         sal_2025.salary_increase_pct_2025,
@@ -159,6 +192,8 @@ base_employees as (
         on cast(agg_contract.employee_id as varchar) = emp.employee_id
     left join current_teams_aggregated teams
         on cast(teams.employee_id as varchar) = emp.employee_id
+    left join lowest_level_team lowest_team
+        on cast(lowest_team.employee_id as varchar) = emp.employee_id
     left join salary_changes_2025 sal_2025
         on cast(sal_2025.employee_id as varchar) = emp.employee_id
     left join roles_2025

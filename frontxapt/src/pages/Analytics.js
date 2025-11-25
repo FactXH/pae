@@ -14,6 +14,9 @@ function Analytics() {
     if (location.pathname.includes('/analytics/talent-development')) return '/analytics/talent-development';
     if (location.pathname.includes('/analytics/managers')) return '/analytics/managers';
     if (location.pathname.includes('/analytics/equality')) return '/analytics/equality';
+    if (location.pathname.includes('/analytics/climate-2025')) return '/analytics/climate-2025';
+    if (location.pathname.includes('/analytics/query-view')) return '/analytics/query-view';
+    if (location.pathname.includes('/analytics/saved-queries')) return '/analytics/saved-queries';
     if (location.pathname.includes('/analytics/overview')) return '/analytics/overview';
     return '/analytics/overview'; // default
   };
@@ -38,6 +41,12 @@ function Analytics() {
             to="/analytics/ta"
           />
           <Tab 
+            label="Climate 2025" 
+            value="/analytics/climate-2025"
+            component={NavLink}
+            to="/analytics/climate-2025"
+          />
+          <Tab 
             label="Talent Development" 
             value="/analytics/talent-development"
             component={NavLink}
@@ -60,6 +69,18 @@ function Analytics() {
             value="/analytics/engagement"
             component={NavLink}
             to="/analytics/engagement"
+          />
+          <Tab 
+            label="Query View" 
+            value="/analytics/query-view"
+            component={NavLink}
+            to="/analytics/query-view"
+          />
+          <Tab 
+            label="Saved Queries" 
+            value="/analytics/saved-queries"
+            component={NavLink}
+            to="/analytics/saved-queries"
           />
         </Tabs>
       </Paper>

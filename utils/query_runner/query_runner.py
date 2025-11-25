@@ -12,7 +12,30 @@ class QueryRunner:
         pass
 
     def run_query(self, query: str, source: str = 'athena', dataframe: bool = True, **kwargs):
-        if source == 'athena':
+        if source == 'sqlite':
+            import sqlite3
+            import pandas as pd
+            
+            # Get database path from kwargs or use default
+            db_path = kwargs.get('db_path', 'db.sqlite3')
+            
+            if not os.path.exists(db_path):
+                raise FileNotFoundError(f"SQLite database not found at {db_path}")
+            
+            print(f"🔍 Executing SQLite query: {query}")
+            
+            conn = sqlite3.connect(db_path, timeout=60.0)
+            try:
+                df = pd.read_sql_query(query, conn)
+                print(f"📊 Retrieved {len(df)} rows")
+            finally:
+                conn.close()
+            
+            if dataframe:
+                return df
+            else:
+                return {'columns': list(df.columns), 'results': df.values.tolist()}
+        elif source == 'athena':
             df = query_athena(query, **kwargs)
             if dataframe:
                 return df

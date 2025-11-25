@@ -5,6 +5,7 @@ with source_memberships as (
         team_id,
         lead,
         company_id,
+        created_at,
         case when _cdc is null then null else _cdc.op end as cdc_operation,
         _event_ts
     from {{ source("athena", "memberships") }}
@@ -31,6 +32,7 @@ select
     employee_id,
     team_id,
     cdc_operation,
+    created_at,
     cast(_event_ts as date) as cdc_date
 from deduplicated_memberships
 order by id, _event_ts

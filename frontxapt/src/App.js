@@ -12,6 +12,11 @@ import TalentDevelopment from './pages/Analytics/TalentDevelopment';
 import Managers from './pages/Analytics/Managers';
 import Equality from './pages/Analytics/Equality';
 import Engagement from './pages/Analytics/Engagement';
+import Climate2025 from './pages/Analytics/Climate2025';
+import QueryView from './components/QueryView';
+import SavedQueriesView from './components/SavedQueriesView';
+import ApiTestComponent from './components/ApiTestComponent';
+import SqlQueryComponent from './components/SqlQueryComponent';
 import './App.css';
 
 const theme = createTheme({
@@ -37,6 +42,8 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="employees" element={<Employees />} />
+            <Route path="api-test" element={<ApiTestComponent />} />
+            <Route path="sql-query" element={<SqlQueryComponent />} />
             <Route path="analytics" element={<Analytics />}>
               <Route index element={<Navigate to="overview" replace />} />
               <Route path="overview" element={<Overview />} />
@@ -45,6 +52,9 @@ function App() {
               <Route path="managers" element={<Managers />} />
               <Route path="equality" element={<Equality />} />
               <Route path="engagement" element={<Engagement />} />
+              <Route path="climate-2025" element={<Climate2025 />} />
+              <Route path="query-view" element={<QueryView />} />
+              <Route path="saved-queries" element={<SavedQueriesView />} />
             </Route>
           </Route>
         </Routes>

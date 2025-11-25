@@ -4,6 +4,8 @@ import { Typography, Paper, Grid, Box, Card, CardContent } from '@mui/material';
 import OverviewFiltersV2 from '../../components/OverviewFiltersV2'; // New floating version
 import HeadcountTable from '../../components/HeadcountTable';
 import HeadcountTimeline from '../../components/HeadcountTimeline';
+import CurrentTeams from '../../components/CurrentTeams';
+import EmployeeOverview from '../../components/EmployeeOverview';
 import { mockEmployeeData } from '../../data/mockEmployeeData';
 import './Overview.css';
 
@@ -106,6 +108,16 @@ function Overview() {
         filters={activeFilters} 
         onFilterChange={handleFilterChange} 
       />
+
+      {/* Current Teams */}
+      <Box mt={3} mb={3}>
+        <CurrentTeams />
+      </Box>
+
+      {/* Employee Overview */}
+      <Box mt={3} mb={3}>
+        <EmployeeOverview />
+      </Box>
 
       {/* Headcount Timeline Chart */}
       <Paper elevation={2} sx={{ p: 3, mb: 3, mt: 3 }}>

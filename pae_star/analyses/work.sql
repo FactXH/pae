@@ -630,3 +630,209 @@ select * from
 data_lake_dev_xavi_silver.dim_hires
 ;
 
+
+
+select * from data_lake_dev_xavi_silver.dim_memberships_scd
+where employee_id = 2306420
+;
+
+select * from data_lake_dev_xavi_silver.dim_memberships_climate_2025
+left join data_lake_dev_xavi_silver.dim_teams
+    on dim_memberships_climate_2025.team_id = dim_teams.team_id
+left join data_lake_dev_xavi_silver.fact_employees 
+    on dim_memberships_climate_2025.employee_id = cast(fact_employees.employee_id as bigint)
+where fact_employees.full_name like 'Xavier Hita';
+
+
+select * from data_lake_dev_xavi_gold.gold_climate_2025_answers;
+
+
+select * from data_lake_dev_xavi_silver.dim_climate_2025_questions;
+
+
+
+
+select * from data_lake_dev_xavi_silver.dim_teams_climate_2025;
+select * from data_lake_dev_xavi_silver.dim_teams_climate_2024;
+
+;
+select * from data_lake_dev_xavi_silver.dim_memberships_scd;
+
+
+
+select distinct year(created_at) from data_lake_bronze.memberships limit 1;
+select distinct year(_event_ts) from data_lake_bronze.memberships;
+
+
+
+
+
+
+
+select employee_id, full_name from data_lake_dev_xavi_silver.fact_employees
+;
+
+select * from data_lake_dev_xavi_silver.base_factorial_memberships_scd
+where employee_id = 97225;
+
+
+
+select * from data_lake_bronze.memberships
+left join data_lake_dev_xavi_silver.dim_teams
+    on memberships.team_id = dim_teams.team_id
+where employee_id = 97225
+
+
+
+select distinct year(effective_from) from data_lake_dev_xavi_silver.base_factorial_employee_managers_scd
+
+
+;
+
+select * from data_lake_dev_xavi_silver.dim_manager_reports
+;
+
+select * from data_lake_dev_xavi_silver.dim_managers_climate_2025;
+
+
+
+;
+select * from data_lake_dev_xavi_silver.base_factorial_employee_managers_scd
+where employee_id = 743571
+;
+
+
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_schema LIKE 'data_lake_dev_xavi_%';
+
+
+
+
+select * from data_lake_dev_xavi_silver.dim_hires;
+
+
+
+"table_schema","table_name"
+
+drop table if exists data_lake_dev_xavi_silver.base_airtable_employees;
+drop table if exists data_lake_dev_xavi_silver.base_airtable_hiring_2025__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_application_phases;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_application_phases__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_applications;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_applications__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_applications_scd;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_applications_scd__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_candidates;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_candidates__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_climate_2024_answers;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_climate_2025_answers;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_contracts;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_employee_managers_scd;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_employees;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_hiring_managers;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_hiring_managers__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_hiring_stages;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_hiring_stages__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_job_catalog_levels;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_job_catalog_roles;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_job_posting_sdc;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_job_posting_sdc__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_job_postings;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_job_postings__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_memberships_scd;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_rejection_reasons;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_rejection_reasons__dbt_tmp;
+drop table if exists data_lake_dev_xavi_silver.base_factorial_teams;
+drop table if exists data_lake_dev_xavi_silver.dim_application_phases;
+drop table if exists data_lake_dev_xavi_silver.dim_applications;
+drop table if exists data_lake_dev_xavi_silver.dim_candidates;
+drop table if exists data_lake_dev_xavi_silver.dim_climate_2025_questions;
+drop table if exists data_lake_dev_xavi_silver.dim_contracts;
+drop table if exists data_lake_dev_xavi_silver.dim_employees;
+drop table if exists data_lake_dev_xavi_silver.dim_hiring_stages;
+drop table if exists data_lake_dev_xavi_silver.dim_job_catalog;
+drop table if exists data_lake_dev_xavi_silver.dim_job_postings;
+drop table if exists data_lake_dev_xavi_silver.dim_manager_reports;
+drop table if exists data_lake_dev_xavi_silver.dim_managers_climate_2025;
+drop table if exists data_lake_dev_xavi_silver.dim_memberships_climate_2024;
+drop table if exists data_lake_dev_xavi_silver.dim_memberships_climate_2025;
+drop table if exists data_lake_dev_xavi_silver.dim_memberships_scd;
+drop table if exists data_lake_dev_xavi_silver.dim_teams;
+drop table if exists data_lake_dev_xavi_silver.dim_teams_climate_2024;
+drop table if exists data_lake_dev_xavi_silver.dim_teams_climate_2025;
+drop table if exists data_lake_dev_xavi_silver.fact_climate_2024;
+drop table if exists data_lake_dev_xavi_silver.fact_climate_2025;
+drop table if exists data_lake_dev_xavi_silver.fact_employees;
+drop table if exists data_lake_dev_xavi_silver.finance_teams;
+drop table if exists data_lake_dev_xavi_silver.finance_teams_2;
+drop table if exists data_lake_dev_xavi_silver.people_teams;
+drop table if exists data_lake_dev_xavi_silver.people_teams_2;
+drop table if exists data_lake_dev_xavi_silver.recruitment_teams;
+drop table if exists data_lake_dev_xavi_silver.recruitment_teams_2;
+drop table if exists data_lake_dev_xavi_gold.gold_climate_2024_answers;
+drop table if exists data_lake_dev_xavi_gold.gold_climate_2025_answers;
+
+
+
+
+
+
+select 
+    candidate_id,
+    candidate_first_name,
+    candidate_last_name,
+    candidate_email,
+    candidate_all_names,
+    application_id,
+    job_posting_id,
+    job_posting_title,
+    hired_date,
+    hiring_stage_id,
+    hiring_stage_name,
+    application_phase_id,
+    application_phase_type,
+    company_id
+ from data_lake_dev_xavi_silver.dim_hires
+
+
+;
+Select
+    first_name,
+    last_name,
+    full_name,
+    employee_id,
+    onboarding_date,
+    offboarding_date
+from data_lake_dev_xavi_silver.dim_employees;
+
+select 
+    position_id,
+    position_name,
+    new_hire_name
+from data_lake_dev_xavi_silver.dim_job_positions
+
+
+
+;
+select * from data_lake_dev_xavi_silver.dim_employees where full_name like '%Rusi%';
+
+
+
+
+
+select * from data_lake_dev_xavi_gold.gold_climate_2025_answers; -equips i subequips
+select * from data_lake_dev_xavi_gold.gold_climate_2025_answers_managers; - manager i subnivell
+
+;
+
+select * from data_lake_bronze.ats_applications where company_id = 1
+and employee_id is not null;
+
+
+
+
+
+select 
+
+

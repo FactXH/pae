@@ -27,7 +27,7 @@ class TADetective:
     else:
       print("No employee found in Airtable, skipping Factorial search.")
     # Continue passing emp to next steps if needed
-    self.find_in_candidates(email)
+    self.find_in_hires(email)
     self.find_applications(email)
     self.find_job_postings(email)
 
@@ -87,7 +87,7 @@ class TADetective:
     return emp
 
 
-  def find_in_candidates(self, email):
+  def find_in_hires(self, email):
     # Placeholder: implement candidate search by email
     pass
 

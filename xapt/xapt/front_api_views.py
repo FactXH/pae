@@ -12,6 +12,9 @@ import sqlite3
 import pandas as pd
 from threading import Thread
 import time
+import os
+from pathlib import Path
+import re
 
 
 @api_view(['GET'])
@@ -172,6 +175,7 @@ def execute_sql(request):
     query = request.data.get('query', '').strip()
     database = request.data.get('database', 'sqlite').strip().lower()
     
+
     if not query:
         return Response({
             'status': 'error',
@@ -225,6 +229,11 @@ def execute_sql(request):
                     kwargs['db_path'] = os.path.join(settings.BASE_DIR, 'db.sqlite3')
                 
                 df = qr.run_query(query, source=source, dataframe=True, **kwargs)
+                
+                # Replace NaN/NA values with None for JSON serialization
+                import numpy as np
+                df = df.replace([np.inf, -np.inf, np.nan], None)
+                df = df.where(df.notna(), None)
                 
                 result_data['completed'] = True
                 result_data['columns'] = list(df.columns)
@@ -376,3 +385,198 @@ def table_columns(request, table_name):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+def list_saved_queries(request):
+    """
+    List all available saved queries from dbt project
+    GET /api/sql/saved-queries/
+    """
+    try:
+        # Path to saved queries directory
+        project_root = Path(settings.BASE_DIR).parent
+        saved_queries_path = project_root / 'pae_star' / 'analyses' / 'saved_queries'
+        
+        if not saved_queries_path.exists():
+            return Response({
+                'status': 'error',
+                'message': f'Saved queries directory not found: {saved_queries_path}'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        queries = []
+        
+        # Read all .sql files in the directory
+        for sql_file in sorted(saved_queries_path.glob('*.sql')):
+            query_name = sql_file.stem  # filename without extension
+            
+            # Read first few lines to get description from comments
+            description = ''
+            with open(sql_file, 'r') as f:
+                for line in f:
+                    if line.strip().startswith('--'):
+                        description += line.strip()[2:].strip() + ' '
+                    else:
+                        break  # Stop at first non-comment line
+            
+            queries.append({
+                'name': query_name,
+                'filename': sql_file.name,
+                'description': description.strip()
+            })
+        
+        return Response({
+            'status': 'success',
+            'queries': queries,
+            'count': len(queries)
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def execute_saved_query(request):
+    """
+    Execute a saved query by name
+    POST /api/sql/saved-queries/execute/
+    Body: { 
+        "query_name": "01_team_overview",
+        "database": "trino" (default)
+    }
+    """
+    query_name = request.data.get('query_name', '').strip()
+    database = request.data.get('database', 'trino').strip().lower()
+    
+    if not query_name:
+        return Response({
+            'status': 'error',
+            'message': 'query_name is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Path to saved queries directory
+        project_root = Path(settings.BASE_DIR).parent
+        saved_queries_path = project_root / 'pae_star' / 'analyses' / 'saved_queries'
+        
+        # Find the query file
+        query_file = saved_queries_path / f'{query_name}.sql'
+        
+        if not query_file.exists():
+            return Response({
+                'status': 'error',
+                'message': f'Query not found: {query_name}',
+                'available_queries_endpoint': '/api/sql/saved-queries/'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Read the query
+        with open(query_file, 'r') as f:
+            query_template = f.read()
+        
+        # Replace dbt ref() calls with actual schema references
+        # Pattern: {{ ref('model_name') }} -> data_lake_dev_xavi_silver.model_name
+        schema = 'data_lake_dev_xavi_silver'
+        query = re.sub(
+            r"{{\s*ref\(['\"]([^'\"]+)['\"]\)\s*}}", 
+            f"{schema}.\\1", 
+            query_template
+        )
+        
+        # Remove any remaining jinja comments
+        query = re.sub(r'{#.*?#}', '', query, flags=re.DOTALL)
+        
+        # Map database names to QueryRunner sources
+        db_mapping = {
+            'sqlite': 'sqlite',
+            'postgres': 'postgres',
+            'trino': 'galaxy',
+            'athena': 'athena'
+        }
+        
+        if database not in db_mapping:
+            return Response({
+                'status': 'error',
+                'message': f'Unknown database: {database}. Supported: sqlite, postgres, trino, athena'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Execute query with timeout
+        result_data = {'completed': False, 'error': None, 'columns': None, 'rows': None, 'row_count': 0}
+        
+        def run_query():
+            try:
+                import sys
+                # Add project root to path
+                if str(project_root) not in sys.path:
+                    sys.path.insert(0, str(project_root))
+                
+                from utils.query_runner.query_runner import QueryRunner
+                
+                qr = QueryRunner()
+                source = db_mapping[database]
+                
+                # Add db_path for SQLite
+                kwargs = {}
+                if database == 'sqlite':
+                    kwargs['db_path'] = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+                
+                df = qr.run_query(query, source=source, dataframe=True, **kwargs)
+                
+                # Replace NaN/NA values with None for JSON serialization
+                import numpy as np
+                df = df.replace([np.inf, -np.inf, np.nan], None)
+                df = df.where(df.notna(), None)
+                
+                result_data['completed'] = True
+                result_data['columns'] = list(df.columns)
+                result_data['rows'] = df.values.tolist()
+                result_data['row_count'] = len(df)
+                    
+            except Exception as e:
+                result_data['error'] = str(e)
+                result_data['traceback'] = traceback.format_exc()
+        
+        # Run query in thread with timeout
+        query_thread = Thread(target=run_query)
+        query_thread.start()
+        query_thread.join(timeout=60.0)  # 60 second timeout
+        
+        if query_thread.is_alive():
+            return Response({
+                'status': 'error',
+                'message': 'Query execution timeout (60 seconds)',
+                'timeout': True,
+                'query_name': query_name
+            }, status=status.HTTP_408_REQUEST_TIMEOUT)
+        
+        if result_data['error']:
+            return Response({
+                'status': 'error',
+                'message': result_data['error'],
+                'traceback': result_data.get('traceback', ''),
+                'query_name': query_name
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not result_data['completed']:
+            return Response({
+                'status': 'error',
+                'message': 'Query did not complete',
+                'query_name': query_name
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return Response({
+            'status': 'success',
+            'query_name': query_name,
+            'columns': result_data['columns'],
+            'rows': result_data['rows'],
+            'row_count': result_data['row_count']
+        })
+        
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc(),
+            'query_name': query_name
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
