@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://FactXH.github.io/pae",
   "dependencies": {
+    "@codemirror/lang-sql": "^6.10.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.5",
@@ -12,6 +13,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@uiw/react-codemirror": "^4.25.3",
     "chart.js": "^4.5.1",
     "d3": "^7.9.0",
     "react": "^19.2.0",

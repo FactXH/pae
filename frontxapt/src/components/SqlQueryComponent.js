@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { sql } from '@codemirror/lang-sql';
 import apiClient from '../services/apiClient';
 import './SqlQueryComponent.css';
 
@@ -20,6 +22,7 @@ const SqlQueryComponent = () => {
   const [columnFilters, setColumnFilters] = useState({});
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [frozenColumns, setFrozenColumns] = useState(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const databases = [
     { id: 'sqlite', name: 'SQLite (Local)', icon: '🗄️' },
@@ -230,9 +233,19 @@ const SqlQueryComponent = () => {
       </div>
 
       <div className="sql-layout">
-        <div className="sql-sidebar">
-          <h3>📋 Available Tables</h3>
-          <div className="tables-list">
+        {!sidebarCollapsed && (
+          <div className="sql-sidebar">
+            <div className="sidebar-header">
+              <h3>📋 Available Tables</h3>
+              <button 
+                className="collapse-btn"
+                onClick={() => setSidebarCollapsed(true)}
+                title="Hide sidebar"
+              >
+                ◀
+              </button>
+            </div>
+            <div className="tables-list">
             {tables.length > 0 ? (
               tables.map((table, index) => (
                 <div key={index} className="table-container">
@@ -275,6 +288,19 @@ const SqlQueryComponent = () => {
             )}
           </div>
         </div>
+        )}
+
+        {sidebarCollapsed && (
+          <div className="sidebar-collapsed">
+            <button 
+              className="expand-btn"
+              onClick={() => setSidebarCollapsed(false)}
+              title="Show sidebar"
+            >
+              ▶
+            </button>
+          </div>
+        )}
 
         <div className="sql-main">
           <div className="query-editor">
@@ -282,13 +308,40 @@ const SqlQueryComponent = () => {
               <span className="editor-title">Query Editor</span>
               <span className="editor-hint">Ctrl + Enter to execute</span>
             </div>
-            <textarea
-              className="query-input"
+            <CodeMirror
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              height="200px"
+              extensions={[sql()]}
+              onChange={(value) => setQuery(value)}
               onKeyDown={handleKeyDown}
-              placeholder="Enter your SELECT query here..."
-              rows={8}
+              theme="light"
+              basicSetup={{
+                lineNumbers: true,
+                highlightActiveLineGutter: true,
+                highlightSpecialChars: true,
+                foldGutter: true,
+                drawSelection: true,
+                dropCursor: true,
+                allowMultipleSelections: true,
+                indentOnInput: true,
+                bracketMatching: true,
+                closeBrackets: true,
+                autocompletion: true,
+                rectangularSelection: true,
+                crosshairCursor: true,
+                highlightActiveLine: true,
+                highlightSelectionMatches: true,
+                closeBracketsKeymap: true,
+                searchKeymap: true,
+                foldKeymap: true,
+                completionKeymap: true,
+                lintKeymap: true,
+              }}
+              style={{
+                fontSize: '14px',
+                border: 'none',
+                fontFamily: 'Monaco, Menlo, Consolas, Courier New, monospace',
+              }}
             />
             <div className="button-group">
               <button
