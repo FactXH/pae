@@ -140,9 +140,25 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS Configuration
+# For local development - multiple ports for flexibility
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React development server
+    "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3002",
+    "http://localhost:3003",
+    "http://127.0.0.1:3003",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:8001",
+    "http://127.0.0.1:8001",
+]
+
+# For GitHub Codespaces - allow all Codespaces origins
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.app\.github\.dev$",  # GitHub Codespaces forwarded ports
 ]
 
 CORS_ALLOW_CREDENTIALS = True

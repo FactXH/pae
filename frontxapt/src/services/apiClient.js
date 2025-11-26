@@ -1,9 +1,68 @@
 /**
  * API Client for xapt backend
  * Handles all HTTP requests with proper error handling
+ * Automatically detects the best available API endpoint
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// Possible API base URLs to try (in order of preference)
+const POSSIBLE_API_URLS = [
+  'http://127.0.0.1:8000/api',
+  'http://127.0.0.1:8001/api',
+  'https://orange-giggle-4j6x7rr4gg5gcjx5r-8000.app.github.dev/api',
+];
+
+let detectedBaseURL = null;
+
+/**
+ * Test if an API URL is accessible
+ */
+async function testAPIURL(baseURL) {
+  try {
+    const response = await fetch(`${baseURL}/test/`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000), // 3 second timeout
+    });
+    return response.ok;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Detect the best working API URL
+ */
+async function detectBestAPIURL() {
+  if (detectedBaseURL) {
+    return detectedBaseURL;
+  }
+
+  // Try from .env first if available
+  const envURL = process.env.REACT_APP_API_URL;
+  if (envURL) {
+    const works = await testAPIURL(envURL);
+    if (works) {
+      detectedBaseURL = envURL;
+      console.log(`✓ Using API URL from env: ${envURL}`);
+      return detectedBaseURL;
+    }
+  }
+
+  // Try each URL in order
+  for (const url of POSSIBLE_API_URLS) {
+    const works = await testAPIURL(url);
+    if (works) {
+      detectedBaseURL = url;
+      console.log(`✓ Detected working API URL: ${url}`);
+      return detectedBaseURL;
+    }
+  }
+
+  // Fallback to first URL if none work
+  detectedBaseURL = POSSIBLE_API_URLS[0];
+  console.warn(`⚠ No working API URL detected, using fallback: ${detectedBaseURL}`);
+  return detectedBaseURL;
+}
 
 class APIError extends Error {
   constructor(message, status, data) {
@@ -15,14 +74,27 @@ class APIError extends Error {
 }
 
 class APIClient {
-  constructor(baseURL = API_BASE_URL) {
+  constructor(baseURL = null) {
     this.baseURL = baseURL;
+    this.initialized = false;
+  }
+
+  /**
+   * Ensure API URL is detected before making requests
+   */
+  async ensureInitialized() {
+    if (!this.initialized) {
+      this.baseURL = await detectBestAPIURL();
+      this.initialized = true;
+    }
   }
 
   /**
    * Generic request method
    */
   async request(endpoint, options = {}) {
+    await this.ensureInitialized();
+    
     const url = `${this.baseURL}${endpoint}`;
     
     const config = {
