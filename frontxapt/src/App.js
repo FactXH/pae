@@ -21,6 +21,7 @@ import SavedQueriesView from './components/SavedQueriesView';
 import ApiTestComponent from './components/ApiTestComponent';
 import MetricsQueryBuilder from './components/MetricsQueryBuilder';
 import ManagerClimateView from './pages/ManagerClimateView';
+import Whiteboard from './pages/Whiteboard';
 import './App.css';
 
 const theme = createTheme({
@@ -65,6 +66,7 @@ function App() {
             <Route path="saved-queries" element={<SavedQueriesView />} />
             <Route path="metrics" element={<MetricsQueryBuilder />} />
             <Route path="manager-climate" element={<ManagerClimateView />} />
+            <Route path="whiteboard" element={<Whiteboard />} />
           </Route>
         </Routes>
       </Router>

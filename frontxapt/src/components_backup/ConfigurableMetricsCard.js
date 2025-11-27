@@ -37,10 +37,8 @@ import StorageIcon from '@mui/icons-material/Storage';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SaveIcon from '@mui/icons-material/Save';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import apiClient from '../services/apiClient';
 import HistogramSlider from './HistogramSlider';
-import SimpleRangeSlider from './SimpleRangeSlider';
 import './ConfigurableMetricsCard.css';
 
 /**
@@ -53,15 +51,8 @@ import './ConfigurableMetricsCard.css';
  * - 'columnname__metric__avg' → Metric with color coding, averaged when dimension hidden
  * - 'columnname__metric__sum' → Metric with color coding, summed when dimension hidden
  * - 'columnname__metric__pct' → Metric with color coding, summed then divided by employee_count__count__sum (weighted average)
- * - 'columnname__metric__max' → Metric with color coding, max value when dimension hidden
- * - 'columnname__metric__min' → Metric with color coding, min value when dimension hidden
- * - 'columnname__metricbignumber__sum' → Big number (EUR format) with gradient background
- * - 'columnname__metricrank__max' → Rank metric (centered, bold, no color)
  * - 'columnname__count__sum' → Count metric (no color), summed when dimension hidden
  * - 'columnname__count__avg' → Count metric (no color), averaged when dimension hidden
- * 
- * Multi-aggregation support (define multiple aggregation options):
- * - 'columnname__metric__sum-avg-max' → Supports SUM, AVG, and MAX (default: first one = SUM)
  * 
  * Aggregation types: avg, sum, pct, count, min, max
  * 
@@ -70,9 +61,8 @@ import './ConfigurableMetricsCard.css';
  *   manager_full_name AS manager__dim,
  *   reporting_level AS level__dim,
  *   1 AS employee_count__count__sum,
- *   avg_salary AS salary__metricbignumber__sum-avg-max,
- *   rank AS ranking__metricrank__max,
- *   avg_accomplishments_recognised AS accomplishments__metric__pct
+ *   avg_accomplishments_recognised AS accomplishments__metric__pct,
+ *   avg_great_place_to_work AS workplace__metric__pct
  * FROM table
  * 
  * When you hide a dimension, metrics are automatically aggregated using their specified function:
@@ -91,9 +81,6 @@ const ConfigurableMetricsCard = ({
   database = 'trino',
   thresholds = { red: 2.2, yellow: 4.0 },
   description = '',
-  initialConfig = null, // NEW: Optional initial configuration from saved view
-  existingQueryId = null, // NEW: If provided, query is already saved
-  enableHistograms = false, // NEW: Enable histogram sliders (expensive calculation, disabled by default)
 }) => {
   const [columns, setColumns] = useState([]);
   const [dimensions, setDimensions] = useState([]);
@@ -112,22 +99,12 @@ const ConfigurableMetricsCard = ({
   const [visibleColumns, setVisibleColumns] = useState([]);
   const [columnSearchFilter, setColumnSearchFilter] = useState('');
   const [configTab, setConfigTab] = useState(0);
-  
-  // Query editor state
-  const [editableQuery, setEditableQuery] = useState(query);
-  const [queryRunning, setQueryRunning] = useState(false);
-  
-  // Separate dialogs for Query and View
-  const [queryDialogOpen, setQueryDialogOpen] = useState(false);
-  const [queryName, setQueryName] = useState('');
-  const [queryDescription, setQueryDescription] = useState('');
-  const [querySaving, setQuerySaving] = useState(false);
-  
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [viewName, setViewName] = useState('');
-  const [viewDescription, setViewDescription] = useState('');
-  const [viewSaving, setViewSaving] = useState(false);
-  const [savedQueryId, setSavedQueryId] = useState(existingQueryId); // Track saved query for view
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportQueryName, setExportQueryName] = useState('');
+  const [exportViewName, setExportViewName] = useState('');
+  const [exportDescription, setExportDescription] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     if (query) {
@@ -136,40 +113,26 @@ const ConfigurableMetricsCard = ({
   }, [query, database]);
 
   const parseColumnMetadata = (columnName) => {
-    // Parse column naming convention: columnname__type__aggregation(s)
+    // Parse column naming convention: columnname__type__aggregation
     // Examples:
     //   manager__dim
     //   avg_score__metric__avg
     //   avg_score__metric__pct
     //   employee_count__count__sum
-    //   total_salary__metricbignumber__sum-avg-max (multi-aggregation)
-    //   rank__metricrank__max
     const parts = columnName.split('__');
     const cleanName = parts[0];
     const type = parts[1] || 'text';
-    const aggregationPart = parts[2] || null; // 'avg', 'sum-avg-max', 'pct', 'count', 'min', 'max'
-
-    // Parse multi-aggregation (e.g., "sum-avg-max")
-    const aggregations = aggregationPart ? aggregationPart.split('-') : [];
-    const primaryAggregation = aggregations[0] || 'AVG'; // First one is default
-    const availableAggregations = aggregations.length > 1 ? aggregations : [primaryAggregation];
-
-    const isBigNumber = type === 'metricbignumber';
-    const isRank = type === 'metricrank';
-    const isMetricType = type === 'metric' || type === 'metricbignumber' || type === 'metricrank' || type === 'count';
+    const aggregation = parts[2] || null; // 'avg', 'sum', 'pct', 'count', 'min', 'max'
 
     return {
       fullName: columnName,
       displayName: cleanName.replace(/_/g, ' '),
       cleanName: cleanName,
-      type: type, // 'dim', 'metric', 'metricbignumber', 'metricrank', 'count', 'sum', 'avg', 'hidden'
+      type: type, // 'dim', 'metric', 'count', 'sum', 'avg', 'hidden'
       isDimension: type === 'dim',
-      isMetric: isMetricType,
-      hasColorCoding: type === 'metric' || type === 'metricbignumber',
-      isBigNumber: isBigNumber, // EUR formatting with gradient
-      isRank: isRank, // Rank display (centered, bold, no color)
-      aggregationType: primaryAggregation.toUpperCase(),
-      availableAggregations: availableAggregations.map(a => a.toUpperCase()), // ['SUM', 'AVG', 'MAX']
+      isMetric: type === 'metric' || type === 'count',
+      hasColorCoding: type === 'metric',
+      aggregationType: aggregation ? aggregation.toUpperCase() : 'AVG',
     };
   };
 
@@ -204,29 +167,16 @@ const ConfigurableMetricsCard = ({
         setDimensions(dims);
         setMetrics(mets);
         
-        // Apply initial config if provided, otherwise use defaults
-        if (initialConfig) {
-          // Apply saved configuration
-          setSelectedDimensions(initialConfig.selectedDimensions || (dims.length > 0 ? [dims[0].fullName] : []));
-          setVisibleColumns(initialConfig.visibleColumns || mets.slice(0, 3).map(m => m.fullName));
-          setDimensionFilters(initialConfig.dimensionFilters || {});
-          setDimensionExcludes(initialConfig.dimensionExcludes || {});
-          setEnabledFilters(initialConfig.enabledFilters || {});
-          setMetricRanges(initialConfig.metricRanges || {});
-          setAggMetricRanges(initialConfig.aggMetricRanges || {});
-          setSortConfig(initialConfig.sortConfig || { column: null, direction: 'asc' });
-        } else {
-          // Use defaults: FIRST dimension selected for grouping by default
-          const defaultGroupBy = dims.length > 0 ? [dims[0].fullName] : [];
-          setSelectedDimensions(defaultGroupBy);
-          setSelectedMetrics(mets.map(m => m.fullName));
-          
-          // Set visible columns: first 3 metrics only (dimensions auto-show from group by)
-          const defaultVisible = [
-            ...mets.slice(0, 3).map(m => m.fullName)
-          ];
-          setVisibleColumns(defaultVisible);
-        }
+        // Start with FIRST dimension selected for grouping by default
+        const defaultGroupBy = dims.length > 0 ? [dims[0].fullName] : [];
+        setSelectedDimensions(defaultGroupBy);
+        setSelectedMetrics(mets.map(m => m.fullName));
+        
+        // Set visible columns: first 3 metrics only (dimensions auto-show from group by)
+        const defaultVisible = [
+          ...mets.slice(0, 3).map(m => m.fullName)
+        ];
+        setVisibleColumns(defaultVisible);
         
         setData(dataObjects);
       } else {
@@ -237,63 +187,6 @@ const ConfigurableMetricsCard = ({
       console.error('Query execution error:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRunQuery = async () => {
-    setQueryRunning(true);
-    setError(null);
-
-    try {
-      const result = await apiClient.executeSQL(editableQuery, database);
-      
-      if (result.columns && result.data) {
-        // Convert array of arrays to array of objects
-        const dataObjects = result.data.map(row => {
-          const obj = {};
-          result.columns.forEach((col, idx) => {
-            obj[col] = row[idx];
-          });
-          return obj;
-        });
-
-        // Parse column metadata from names
-        const parsedColumns = result.columns.map(col => {
-          const colName = col.name || col;
-          return parseColumnMetadata(colName);
-        });
-
-        // Separate dimensions and metrics
-        const dims = parsedColumns.filter(c => c.isDimension);
-        const mets = parsedColumns.filter(c => c.isMetric);
-
-        setColumns(parsedColumns);
-        setDimensions(dims);
-        setMetrics(mets);
-        
-        // Reset to defaults after query change
-        const defaultGroupBy = dims.length > 0 ? [dims[0].fullName] : [];
-        setSelectedDimensions(defaultGroupBy);
-        setSelectedMetrics(mets.map(m => m.fullName));
-        
-        const defaultVisible = mets.slice(0, 3).map(m => m.fullName);
-        setVisibleColumns(defaultVisible);
-        
-        // Clear filters when query changes
-        setDimensionFilters({});
-        setDimensionExcludes({});
-        setMetricRanges({});
-        setAggMetricRanges({});
-        
-        setData(dataObjects);
-      } else {
-        setError('No data returned from query');
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to execute query');
-      console.error('Query execution error:', err);
-    } finally {
-      setQueryRunning(false);
     }
   };
 
@@ -436,69 +329,13 @@ const ConfigurableMetricsCard = ({
 
     const col = columns.find(c => c.fullName === column);
     
-    // If it's a rank metric (centered, bold, no color)
-    if (col && col.isRank) {
-      return (
-        <Box 
-          sx={{ 
-            textAlign: 'center', 
-            fontWeight: 700, 
-            fontSize: '1rem',
-            color: '#000000',
-            py: 0.5
-          }}
-        >
-          {value}
-        </Box>
-      );
-    }
-    
     // If it's a count/sum/avg type (no color coding)
     if (col && !col.hasColorCoding) {
       const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
       return <span style={{ fontWeight: 500 }}>{displayValue}</span>;
     }
 
-    // If it's a big number metric (EUR formatting with gradient background)
-    if (col && col.isBigNumber) {
-      // Get all values for this column to calculate min/max
-      const columnValues = getProcessedData()
-        .map(row => Number(row[column]))
-        .filter(v => !isNaN(v) && v !== null && v !== undefined);
-      
-      const minVal = Math.min(...columnValues);
-      const maxVal = Math.max(...columnValues);
-      const range = maxVal - minVal;
-      
-      // Calculate intensity (0 to 1) based on value position in range
-      const intensity = range > 0 ? (Number(value) - minVal) / range : 0.5;
-      
-      // Create gradient background: light blue (low) to dark blue (high)
-      const backgroundColor = `rgba(33, 150, 243, ${0.1 + intensity * 0.7})`; // Material Blue
-      const textColor = intensity > 0.5 ? '#ffffff' : '#000000';
-      
-      const displayValue = typeof value === 'number' 
-        ? value.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-        : value;
-
-      return (
-        <Chip
-          label={displayValue}
-          size="small"
-          sx={{
-            backgroundColor: backgroundColor,
-            color: textColor,
-            fontWeight: 600,
-            minWidth: '80px',
-            '& .MuiChip-label': {
-              px: 1.5
-            }
-          }}
-        />
-      );
-    }
-
-    // If it's a metric with color coding (standard 2 decimals)
+    // If it's a metric with color coding
     if (col && col.hasColorCoding) {
       const color = getMetricColor(value);
       const displayValue = typeof value === 'number' ? value.toFixed(2) : value;
@@ -812,58 +649,33 @@ const ConfigurableMetricsCard = ({
   const filterRatio = getFilterRatio();
   const filterFunnel = getFilterFunnel();
 
-  // Handle saving Query (SQL + metadata)
-  const handleSaveQuery = async () => {
-    if (!queryName) {
-      alert('Please provide a Query Name');
+  // Handle exporting query and view configuration to backend
+  const handleExport = async () => {
+    if (!exportQueryName || !exportViewName) {
+      alert('Please provide both Query Name and View Name');
       return;
     }
 
-    setQuerySaving(true);
+    setExportLoading(true);
+    setExportSuccess(false);
 
     try {
+      // 1. Create or get Query
       const queryPayload = {
-        name: queryName,
-        description: queryDescription || `Query for ${title}`,
+        name: exportQueryName,
+        description: exportDescription || `Query for ${title}`,
         sql_query: query,
         database: database
       };
 
-      const data = await apiClient.createQuery(queryPayload);
-      setSavedQueryId(data.id);
-      
-      alert(`Query "${queryName}" saved successfully! ID: ${data.id}`);
-      setQueryDialogOpen(false);
-      setQueryName('');
-      setQueryDescription('');
+      let queryResponse = await apiClient.post('/queries/', queryPayload);
+      const queryId = queryResponse.data.id;
 
-    } catch (error) {
-      console.error('Query save error:', error);
-      alert(`Error saving query: ${error.data?.name?.[0] || error.message}`);
-    } finally {
-      setQuerySaving(false);
-    }
-  };
-
-  // Handle saving View (configuration)
-  const handleSaveView = async () => {
-    if (!viewName) {
-      alert('Please provide a View Name');
-      return;
-    }
-
-    if (!savedQueryId) {
-      alert('Please save the Query first before saving a View');
-      return;
-    }
-
-    setViewSaving(true);
-
-    try {
+      // 2. Create QueryView with current configuration
       const viewPayload = {
-        name: viewName,
-        description: viewDescription || `View for ${title}`,
-        query: savedQueryId,
+        name: exportViewName,
+        description: exportDescription || `View for ${title}`,
+        query: queryId,
         config: {
           title: title,
           thresholds: thresholds,
@@ -878,18 +690,22 @@ const ConfigurableMetricsCard = ({
         }
       };
 
-      await apiClient.createQueryView(viewPayload);
+      await apiClient.post('/query-views/', viewPayload);
       
-      alert(`View "${viewName}" saved successfully!`);
-      setViewDialogOpen(false);
-      setViewName('');
-      setViewDescription('');
+      setExportSuccess(true);
+      setTimeout(() => {
+        setExportDialogOpen(false);
+        setExportQueryName('');
+        setExportViewName('');
+        setExportDescription('');
+        setExportSuccess(false);
+      }, 2000);
 
     } catch (error) {
-      console.error('View save error:', error);
-      alert(`Error saving view: ${error.data?.name?.[0] || error.message}`);
+      console.error('Export error:', error);
+      alert(`Error exporting: ${error.response?.data?.name?.[0] || error.message}`);
     } finally {
-      setViewSaving(false);
+      setExportLoading(false);
     }
   };
 
@@ -902,64 +718,14 @@ const ConfigurableMetricsCard = ({
             {title}
           </Typography>
           <Box display="flex" alignItems="center" gap={1}>
-            <IconButton
-              size="small"
-              onClick={handleRunQuery}
-              disabled={queryRunning}
-              sx={{ 
-                p: 0.5,
-                bgcolor: 'error.main',
-                color: 'white',
-                '&:hover': {
-                  bgcolor: 'error.dark'
-                },
-                '&:disabled': {
-                  bgcolor: 'grey.400',
-                  color: 'white'
-                }
-              }}
-              title="Run edited query"
+            <IconButton 
+              size="small" 
+              onClick={() => setExportDialogOpen(true)}
+              sx={{ p: 0.5 }}
+              title="Save query configuration"
             >
-              {queryRunning ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon fontSize="small" />}
+              <SaveIcon fontSize="small" />
             </IconButton>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setQueryDialogOpen(true)}
-              startIcon={<SaveIcon fontSize="small" />}
-              sx={{ 
-                minWidth: 'auto',
-                px: 1,
-                py: 0.5,
-                fontSize: '0.75rem',
-                borderColor: savedQueryId ? 'success.main' : 'grey.400',
-                color: savedQueryId ? 'success.main' : 'text.secondary',
-                '&:hover': {
-                  borderColor: savedQueryId ? 'success.dark' : 'grey.600',
-                  bgcolor: savedQueryId ? 'success.50' : 'grey.50'
-                }
-              }}
-              title="Save Query (SQL)"
-            >
-              {savedQueryId ? `Query #${savedQueryId}` : 'Save Query'}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => setViewDialogOpen(true)}
-              startIcon={<SaveIcon fontSize="small" />}
-              disabled={!savedQueryId}
-              sx={{ 
-                minWidth: 'auto',
-                px: 1,
-                py: 0.5,
-                fontSize: '0.75rem'
-              }}
-              title="Save View (Configuration)"
-              color="primary"
-            >
-              Save View
-            </Button>
             <Chip 
               icon={<StorageIcon />}
               label={database.toUpperCase()} 
@@ -1065,47 +831,22 @@ const ConfigurableMetricsCard = ({
 
             {/* Tab 0: Query */}
             {configTab === 0 && (
-              <Box>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    startIcon={queryRunning ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />}
-                    onClick={handleRunQuery}
-                    disabled={queryRunning}
-                    sx={{ fontWeight: 600 }}
-                  >
-                    {queryRunning ? 'Running...' : 'Run Query'}
-                  </Button>
-                  <Typography variant="caption" color="text.secondary">
-                    Edit the SQL query below and click Run to update the results
-                  </Typography>
-                </Box>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={15}
-                  value={editableQuery}
-                  onChange={(e) => setEditableQuery(e.target.value)}
-                  variant="outlined"
-                  placeholder="Enter your SQL query here..."
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                      fontSize: '0.875rem',
-                      bgcolor: '#1e1e1e',
-                      color: '#d4d4d4',
-                    },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#404040',
-                    },
-                    '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#007acc',
-                    }
-                  }}
-                />
-              </Box>
+            <Paper 
+              variant="outlined" 
+              sx={{ 
+                p: 2, 
+                bgcolor: '#1e1e1e', 
+                color: '#d4d4d4',
+                fontFamily: 'monospace',
+                fontSize: '0.875rem',
+                overflow: 'auto',
+                maxHeight: '400px'
+              }}
+            >
+              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                {query}
+              </pre>
+            </Paper>
             )}
 
             {/* Tab 1: Filters */}
@@ -1254,46 +995,25 @@ const ConfigurableMetricsCard = ({
                       
                       return (
                         <Grid item xs={12} sm={6} md={4} key={metric.fullName}>
-                          {enableHistograms ? (
-                            <HistogramSlider
-                              label={metric.displayName}
-                              values={values}
-                              range={metricRanges[metric.fullName]}
-                              onChange={(newRange) => {
-                                setMetricRanges(prev => ({
-                                  ...prev,
-                                  [metric.fullName]: newRange
-                                }));
-                              }}
-                              onReset={() => {
-                                setMetricRanges(prev => {
-                                  const updated = { ...prev };
-                                  delete updated[metric.fullName];
-                                  return updated;
-                                });
-                              }}
-                              bins={20}
-                            />
-                          ) : (
-                            <SimpleRangeSlider
-                              label={metric.displayName}
-                              values={values}
-                              range={metricRanges[metric.fullName]}
-                              onChange={(newRange) => {
-                                setMetricRanges(prev => ({
-                                  ...prev,
-                                  [metric.fullName]: newRange
-                                }));
-                              }}
-                              onReset={() => {
-                                setMetricRanges(prev => {
-                                  const updated = { ...prev };
-                                  delete updated[metric.fullName];
-                                  return updated;
-                                });
-                              }}
-                            />
-                          )}
+                          <HistogramSlider
+                            label={metric.displayName}
+                            values={values}
+                            range={metricRanges[metric.fullName]}
+                            onChange={(newRange) => {
+                              setMetricRanges(prev => ({
+                                ...prev,
+                                [metric.fullName]: newRange
+                              }));
+                            }}
+                            onReset={() => {
+                              setMetricRanges(prev => {
+                                const updated = { ...prev };
+                                delete updated[metric.fullName];
+                                return updated;
+                              });
+                            }}
+                            bins={20}
+                          />
                         </Grid>
                       );
                     })}
@@ -1431,46 +1151,25 @@ const ConfigurableMetricsCard = ({
                         
                         return (
                           <Grid item xs={12} sm={6} md={4} key={metric.fullName}>
-                            {enableHistograms ? (
-                              <HistogramSlider
-                                label={`${metric.displayName} (Aggregated)`}
-                                values={values}
-                                range={aggMetricRanges[metric.fullName]}
-                                onChange={(newRange) => {
-                                  setAggMetricRanges(prev => ({
-                                    ...prev,
-                                    [metric.fullName]: newRange
-                                  }));
-                                }}
-                                onReset={() => {
-                                  setAggMetricRanges(prev => {
-                                    const updated = { ...prev };
-                                    delete updated[metric.fullName];
-                                    return updated;
-                                  });
-                                }}
-                                bins={20}
-                              />
-                            ) : (
-                              <SimpleRangeSlider
-                                label={`${metric.displayName} (Aggregated)`}
-                                values={values}
-                                range={aggMetricRanges[metric.fullName]}
-                                onChange={(newRange) => {
-                                  setAggMetricRanges(prev => ({
-                                    ...prev,
-                                    [metric.fullName]: newRange
-                                  }));
-                                }}
-                                onReset={() => {
-                                  setAggMetricRanges(prev => {
-                                    const updated = { ...prev };
-                                    delete updated[metric.fullName];
-                                    return updated;
-                                  });
-                                }}
-                              />
-                            )}
+                            <HistogramSlider
+                              label={`${metric.displayName} (Aggregated)`}
+                              values={values}
+                              range={aggMetricRanges[metric.fullName]}
+                              onChange={(newRange) => {
+                                setAggMetricRanges(prev => ({
+                                  ...prev,
+                                  [metric.fullName]: newRange
+                                }));
+                              }}
+                              onReset={() => {
+                                setAggMetricRanges(prev => {
+                                  const updated = { ...prev };
+                                  delete updated[metric.fullName];
+                                  return updated;
+                                });
+                              }}
+                              bins={20}
+                            />
                           </Grid>
                         );
                       })}
@@ -1546,40 +1245,6 @@ const ConfigurableMetricsCard = ({
                       );
                     })}
                   </TableRow>
-                  {/* Filter Row - under headers */}
-                  <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                    {getVisibleColumns().map(colName => {
-                      const col = getColumnByName(colName);
-                      
-                      // Only show filter inputs for dimensions
-                      if (!col?.isDimension) {
-                        return <TableCell key={colName} sx={{ p: 0.5 }} />;
-                      }
-                      
-                      return (
-                        <TableCell key={colName} sx={{ p: 0.5 }}>
-                          <TextField
-                            size="small"
-                            placeholder={`Filter ${col.displayName}...`}
-                            value={dimensionFilters[col.fullName] || ''}
-                            onChange={(e) => {
-                              setDimensionFilters(prev => ({
-                                ...prev,
-                                [col.fullName]: e.target.value
-                              }));
-                            }}
-                            sx={{ 
-                              width: '100%',
-                              '& .MuiInputBase-root': { 
-                                fontSize: '0.7rem',
-                                height: '28px'
-                              }
-                            }}
-                          />
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
                 </TableHead>
                 <TableBody>
                   {getProcessedData().map((row, rowIndex) => (
@@ -1623,99 +1288,51 @@ const ConfigurableMetricsCard = ({
         )}
       </CardContent>
 
-      {/* Query Save Dialog */}
-      <Dialog open={queryDialogOpen} onClose={() => !querySaving && setQueryDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>💾 Save Query (SQL)</DialogTitle>
+      {/* Export Dialog */}
+      <Dialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Save Query Configuration</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
-            Save the SQL query for reuse. After saving, you can create multiple views with different configurations.
-          </Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Query Name"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={queryName}
-            onChange={(e) => setQueryName(e.target.value)}
-            disabled={querySaving}
-            sx={{ mb: 2 }}
-            helperText="Unique name for the SQL query"
-          />
-          <TextField
-            margin="dense"
-            label="Description (optional)"
-            type="text"
-            fullWidth
-            variant="outlined"
-            multiline
-            rows={2}
-            value={queryDescription}
-            onChange={(e) => setQueryDescription(e.target.value)}
-            disabled={querySaving}
-          />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              label="Query Name"
+              value={exportQueryName}
+              onChange={(e) => setExportQueryName(e.target.value)}
+              fullWidth
+              required
+              helperText="Unique name for the SQL query"
+            />
+            <TextField
+              label="View Name"
+              value={exportViewName}
+              onChange={(e) => setExportViewName(e.target.value)}
+              fullWidth
+              required
+              helperText="Unique name for this specific configuration"
+            />
+            <TextField
+              label="Description (Optional)"
+              value={exportDescription}
+              onChange={(e) => setExportDescription(e.target.value)}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            {exportSuccess && (
+              <Alert severity="success">Successfully saved!</Alert>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setQueryDialogOpen(false)} disabled={querySaving}>
+          <Button onClick={() => setExportDialogOpen(false)} disabled={exportLoading}>
             Cancel
           </Button>
           <Button 
-            onClick={handleSaveQuery} 
+            onClick={handleExport} 
             variant="contained" 
-            disabled={querySaving || !queryName}
-            startIcon={querySaving ? <CircularProgress size={16} /> : <SaveIcon />}
+            disabled={exportLoading || !exportQueryName || !exportViewName}
+            startIcon={exportLoading ? <CircularProgress size={16} /> : <SaveIcon />}
           >
-            Save Query
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* View Save Dialog */}
-      <Dialog open={viewDialogOpen} onClose={() => !viewSaving && setViewDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>⚙️ Save View (Configuration)</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
-            Save the current configuration (filters, visibility, grouping) as a reusable view.
-            {savedQueryId && <Box component="span" sx={{ fontWeight: 600, color: 'success.main' }}> Query ID: {savedQueryId}</Box>}
-          </Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="View Name"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={viewName}
-            onChange={(e) => setViewName(e.target.value)}
-            disabled={viewSaving}
-            sx={{ mb: 2 }}
-            helperText="Unique name for this view configuration"
-          />
-          <TextField
-            margin="dense"
-            label="Description (optional)"
-            type="text"
-            fullWidth
-            variant="outlined"
-            multiline
-            rows={2}
-            value={viewDescription}
-            onChange={(e) => setViewDescription(e.target.value)}
-            disabled={viewSaving}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewDialogOpen(false)} disabled={viewSaving}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSaveView} 
-            variant="contained" 
-            disabled={viewSaving || !viewName || !savedQueryId}
-            startIcon={viewSaving ? <CircularProgress size={16} /> : <SaveIcon />}
-          >
-            Save View
+            Save
           </Button>
         </DialogActions>
       </Dialog>

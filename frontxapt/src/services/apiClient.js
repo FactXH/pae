@@ -243,6 +243,87 @@ class APIClient {
   async getTableColumns(tableName) {
     return this.get(`/sql/tables/${tableName}/columns/`);
   }
+
+  // =================
+  // Query & View Management
+  // =================
+
+  /**
+   * Get all queries
+   */
+  async getQueries() {
+    return this.get('/queries/');
+  }
+
+  /**
+   * Get single query
+   */
+  async getQuery(id) {
+    return this.get(`/queries/${id}/`);
+  }
+
+  /**
+   * Create query
+   */
+  async createQuery(data) {
+    return this.post('/queries/', data);
+  }
+
+  /**
+   * Update query
+   */
+  async updateQuery(id, data) {
+    return this.put(`/queries/${id}/`, data);
+  }
+
+  /**
+   * Delete query
+   */
+  async deleteQuery(id) {
+    return this.delete(`/queries/${id}/`);
+  }
+
+  /**
+   * Get all query views
+   */
+  async getQueryViews() {
+    return this.get('/query-views/');
+  }
+
+  /**
+   * Get single query view
+   */
+  async getQueryView(id) {
+    return this.get(`/query-views/${id}/`);
+  }
+
+  /**
+   * Get query view by name
+   */
+  async getQueryViewByName(name) {
+    return this.get('/query-views/by_name/', { name });
+  }
+
+  /**
+   * Create query view
+   */
+  async createQueryView(data) {
+    return this.post('/query-views/', data);
+  }
+
+  /**
+   * Update query view
+   */
+  async updateQueryView(id, data) {
+    return this.put(`/query-views/${id}/`, data);
+  }
+
+  /**
+   * Delete query view
+   */
+  async deleteQueryView(id) {
+    return this.delete(`/query-views/${id}/`);
+  }
 }
 
 // Export singleton instance
