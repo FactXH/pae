@@ -5,8 +5,8 @@
 -- filtered to employees who were active at the time of the survey
 -- =====================================================
 
-WITH manager_reports AS (
-    -- Get all manager-report relationships
+WITH manager_reports_scd AS (
+    -- Get manager-report relationships that were valid at survey time (2025-09-10)
     SELECT 
         manager_employee_id,
         manager_full_name,
@@ -14,7 +14,9 @@ WITH manager_reports AS (
         report_employee_id,
         reporting_level,
         is_direct_report
-    FROM {{ ref('dim_manager_reports') }}
+    FROM {{ ref('dim_manager_reports_scd') }}
+    WHERE effective_from <= DATE '2025-09-10'
+        AND (effective_to IS NULL OR effective_to > DATE '2025-09-10')
 ),
 
 employees_active_at_survey AS (
@@ -38,7 +40,7 @@ active_manager_reports AS (
         mr.report_employee_id,
         mr.reporting_level,
         mr.is_direct_report
-    FROM manager_reports mr
+    FROM manager_reports_scd mr
     INNER JOIN employees_active_at_survey emp_mgr 
         ON mr.manager_employee_id = emp_mgr.employee_id
     INNER JOIN employees_active_at_survey emp_rep 

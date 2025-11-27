@@ -223,9 +223,11 @@ class APIClient {
 
   /**
    * Execute SQL query
+   * @param {string} query - SQL query to execute
+   * @param {string} database - Database to query ('sqlite', 'postgres', 'trino', 'athena')
    */
-  async executeSQL(query) {
-    return this.post('/sql/execute/', { query });
+  async executeSQL(query, database = 'trino') {
+    return this.post('/sql/execute/', { query, database });
   }
 
   /**

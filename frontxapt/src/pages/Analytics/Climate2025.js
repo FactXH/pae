@@ -1,5 +1,6 @@
 import React from 'react';
 import { Typography, Paper, Grid, Box } from '@mui/material';
+import ConfigurableMetricsCard from '../../components/ConfigurableMetricsCard';
 import './Climate2025.css';
 
 function Climate2025() {
@@ -102,6 +103,34 @@ function Climate2025() {
               </Box>
             </Box>
           </Paper>
+        </Grid>
+
+        {/* Manager Climate Metrics Card */}
+        <Grid item xs={12}>
+          <ConfigurableMetricsCard
+            title="Manager Climate Survey Results"
+            description="Climate survey results aggregated by manager and reporting level. Column names define behavior automatically."
+            query={`
+              SELECT 
+                manager_full_name AS manager__dim,
+                reporting_level AS level__dim,
+                level_employee_count AS employee_count__count__sum,
+                avg_accomplishments_recognised AS accomplishments__metric__avg,
+                avg_great_place_to_work AS workplace__metric__avg,
+                avg_workspace_environment AS workspace__metric__avg,
+                avg_culture_and_values_practiced AS culture__metric__avg,
+                avg_trust_leaders AS trust__metric__avg,
+                avg_leaders_inspire AS inspire__metric__avg
+              FROM data_lake_dev_xavi_gold.gold_climate_2025_by_manager
+              ORDER BY manager_full_name, reporting_level
+              limit 10000000
+            `}
+            database="trino"
+            thresholds={{
+              red: 2.2,
+              yellow: 4.0,
+            }}
+          />
         </Grid>
       </Grid>
     </div>

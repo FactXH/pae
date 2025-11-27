@@ -18,3 +18,7 @@ def convert_decimal_separator(input_path, output_path=None):
 
 # Example usage:
 # convert_decimal_separator("/home/xavier/Documents/PAE/Projectes/pae/_aprivate/results.csv")
+
+if __name__ == "__main__":
+    import sys        
+    convert_decimal_separator("/home/xavier/Documents/pae/_adata/climate/climate_by_manager.csv", "/home/xavier/Documents/pae/_adata/climate/climate_by_manager_2025.xlsx")

@@ -13,11 +13,14 @@ import Managers from './pages/Analytics/Managers';
 import Equality from './pages/Analytics/Equality';
 import Engagement from './pages/Analytics/Engagement';
 import Climate2025 from './pages/Analytics/Climate2025';
+import EmployeeFacts from './pages/Analytics/EmployeeFacts';
 import WhiteboardProd from './pages/Analytics/WhiteboardProd';
 import WhiteboardDev from './pages/Analytics/WhiteboardDev';
 import SqlQueryRouter from './components/SqlQueryRouter';
 import SavedQueriesView from './components/SavedQueriesView';
 import ApiTestComponent from './components/ApiTestComponent';
+import MetricsQueryBuilder from './components/MetricsQueryBuilder';
+import ManagerClimateView from './pages/ManagerClimateView';
 import './App.css';
 
 const theme = createTheme({
@@ -54,11 +57,14 @@ function App() {
               <Route path="equality" element={<Equality />} />
               <Route path="engagement" element={<Engagement />} />
               <Route path="climate-2025" element={<Climate2025 />} />
+              <Route path="employee-facts" element={<EmployeeFacts />} />
               <Route path="whiteboard-prod" element={<WhiteboardProd />} />
               <Route path="whiteboard-dev" element={<WhiteboardDev />} />
             </Route>
             <Route path="sql-editor" element={<SqlQueryRouter />} />
             <Route path="saved-queries" element={<SavedQueriesView />} />
+            <Route path="metrics" element={<MetricsQueryBuilder />} />
+            <Route path="manager-climate" element={<ManagerClimateView />} />
           </Route>
         </Routes>
       </Router>

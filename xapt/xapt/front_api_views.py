@@ -182,11 +182,12 @@ def execute_sql(request):
             'message': 'Query is required'
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Only allow SELECT queries for safety
-    if not query.upper().startswith('SELECT'):
+    # Only allow SELECT queries (and WITH clauses for CTEs) for safety
+    query_upper = query.strip().upper()
+    if not (query_upper.startswith('SELECT') or query_upper.startswith('WITH')):
         return Response({
             'status': 'error',
-            'message': 'Only SELECT queries are allowed'
+            'message': 'Only SELECT queries and WITH (CTE) queries are allowed'
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
@@ -272,7 +273,8 @@ def execute_sql(request):
         return Response({
             'status': 'success',
             'columns': result_data['columns'],
-            'rows': result_data['rows'],
+            'data': result_data['rows'],  # Frontend expects 'data' key
+            'rows': result_data['rows'],   # Keep for backwards compatibility
             'row_count': result_data['row_count'],
             'query': query
         })

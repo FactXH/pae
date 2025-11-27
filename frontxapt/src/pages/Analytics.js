@@ -15,6 +15,7 @@ function Analytics() {
     if (location.pathname.includes('/analytics/managers')) return '/analytics/managers';
     if (location.pathname.includes('/analytics/equality')) return '/analytics/equality';
     if (location.pathname.includes('/analytics/climate-2025')) return '/analytics/climate-2025';
+    if (location.pathname.includes('/analytics/employee-facts')) return '/analytics/employee-facts';
     if (location.pathname.includes('/analytics/whiteboard-prod')) return '/analytics/whiteboard-prod';
     if (location.pathname.includes('/analytics/whiteboard-dev')) return '/analytics/whiteboard-dev';
     if (location.pathname.includes('/analytics/overview')) return '/analytics/overview';
@@ -45,6 +46,12 @@ function Analytics() {
             value="/analytics/climate-2025"
             component={NavLink}
             to="/analytics/climate-2025"
+          />
+          <Tab 
+            label="Employee Facts" 
+            value="/analytics/employee-facts"
+            component={NavLink}
+            to="/analytics/employee-facts"
           />
           <Tab 
             label="Talent Development" 

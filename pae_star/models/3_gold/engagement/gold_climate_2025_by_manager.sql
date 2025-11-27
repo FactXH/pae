@@ -40,7 +40,7 @@ responses_with_manager_level AS (
         mle.level_employee_count
     FROM fact_responses f
     INNER JOIN employees e ON f.question_respondent_access_id = e.access_id
-    INNER JOIN manager_level_employees mle ON mle.employee_id_bigint = CAST(CAST(e.employee_id AS VARCHAR) AS BIGINT)
+    INNER JOIN manager_level_employees mle ON mle.employee_id_bigint = e.employee_id
 )
 
 SELECT

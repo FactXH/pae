@@ -38,6 +38,9 @@ function Layout() {
           <Button color="inherit" component={Link} to="/analytics">
             Analytics
           </Button>
+          <Button color="inherit" component={Link} to="/metrics">
+            Metrics
+          </Button>
           <Button
             color="inherit"
             onClick={handleSqlEditorClick}
