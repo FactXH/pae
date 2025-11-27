@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: athena
-    database: factorial_datalake_production
+    database: aws_dev_data_glue_catalog
     schema: data_lake_bronze
     tables:
       - name: airbyte_airtable_people_people_todos_sync_view_tblmwfnk5fykznky7
@@ -59,7 +59,7 @@ sources:
 
 
   - name: performance
-    database: factorial_datalake_production
+    database: aws_dev_data_glue_catalog
     schema: data_lake_bronze
     tables:
     - name: performance_scores
@@ -82,7 +82,7 @@ sources:
 
   
   - name: factorial_ats
-    database: factorial_datalake_production
+    database: aws_dev_data_glue_catalog
     schema: data_lake_bronze
     tables:
       - name: ats_applications
@@ -126,7 +126,7 @@ sources:
 
 
   - name: engagement
-    database: factorial_datalake_production
+    database: aws_dev_data_glue_catalog
     schema: data_lake_bronze
     tables:
       - name: surveys_forms
@@ -152,3 +152,10 @@ sources:
 
       - name: custom_fields_resource_fields
         description: "Raw table mapping custom fields to resources."
+
+  - name: aux_tables
+    database: aws_dev_data_glue_catalog
+    schema: data_lake_dev_xavi_silver
+    tables:
+      - name: aux_job_position_matching
+        description: "Auxiliary table for job position matching analysis."

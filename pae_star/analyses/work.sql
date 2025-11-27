@@ -826,13 +826,77 @@ select * from data_lake_dev_xavi_gold.gold_climate_2025_answers_managers; - mana
 
 ;
 
-select * from data_lake_bronze.ats_applications where company_id = 1
-and employee_id is not null;
+select * from data_lake_bronze.ats_applications where id = 9527841;
+
+
+
+      SELECT 
+        team_name, 
+        parent_team_name
+      FROM data_lake_dev_xavi_silver.dim_teams
+      WHERE team_type = 'Team'
+      ORDER BY parent_team_name, team_name
+
+;
+
+select * from
+data_lake_dev_xavi_silver.fact_teams
+;
 
 
 
 
 
+select * from data_lake_dev_xavi_gold.gold_climate_2025_answers;
+;
+
+
+;
 select 
+    manager_full_name, --dim
+    reporting_level,  --dim
+    level_employee_count,  --metric no format
+    avg_accomplishments_recognised, --metric green yellow red format defining the thresholds
+    avg_great_place_to_work -- metric green yellow red format defining the thresholds
+from data_lake_dev_xavi_gold.gold_climate_2025_by_manager;
 
 
+select *
+from data_lake_dev_xavi_gold.gold_climate_2025_by_manager
+limit 1;
+
+;
+
+
+
+select * from data_lake_dev_xavi_silver.fact_employees limit 1
+
+
+
+
+;
+        SELECT
+            CAST(candidate_id AS BIGINT) as candidate_id,
+            candidate_first_name,
+            candidate_last_name,
+            candidate_email,
+            candidate_all_names,
+            CAST(application_id AS BIGINT) as application_id,
+            -- application_updated_at,
+            CAST(job_posting_id AS BIGINT) as job_posting_id,
+            job_posting_title,
+            hired_date,
+            CAST(hiring_stage_id AS BIGINT) as hiring_stage_id,
+            hiring_stage_name,
+            CAST(application_phase_id AS BIGINT) as application_phase_id,
+            application_phase_type,
+            CAST(company_id AS BIGINT) as company_id
+        FROM data_lake_dev_xavi_silver.dim_hires
+        WHERE 1=1
+;
+
+
+
+
+select * from data_lake_dev_xavi_silver.aux_job_position_matching
+limit 105;

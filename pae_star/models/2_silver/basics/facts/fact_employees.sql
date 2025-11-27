@@ -51,7 +51,8 @@ first_contracts as (
         employee_id,
         effective_date as first_effective_date,
         role_level_name as first_role_level_name,
-        job_catalog_level_id as first_job_catalog_level_id
+        job_catalog_level_id as first_job_catalog_level_id,
+        salary_amount as first_salary_amount
     from (
         select *,
             row_number() over (partition by employee_id order by effective_date asc) as rn
@@ -92,12 +93,14 @@ current_teams_aggregated as (
 lowest_level_team as (
     select 
         employee_id,
+        team_id as lowest_level_team_id,
         team_name as lowest_level_team_name,
         team_level as lowest_level_team_level,
         parent_team_name as lowest_level_parent_team_name
     from (
         select 
             mem.employee_id,
+            mem.team_id,
             teams.team_name,
             teams.team_level,
             teams.parent_team_name,
@@ -112,6 +115,53 @@ lowest_level_team as (
         left join {{ ref("dim_teams") }} teams
             on mem.team_id = teams.team_id
         where mem.is_current = true
+    ) ranked
+    where rn = 1
+),
+-- Get the first lowest level team for each employee (feature)
+first_lowest_level_team as (
+    select 
+        employee_id,
+        team_id as first_lowest_level_team_id,
+        team_name as first_lowest_level_team_name,
+        team_level as first_lowest_level_team_level,
+        parent_team_name as first_lowest_level_parent_team_name
+    from (
+        select 
+            mem.employee_id,
+            mem.team_id,
+            teams.team_name,
+            teams.team_level,
+            teams.parent_team_name,
+            mem.effective_from,
+            mem.effective_to,
+            onboarding_date,
+            tenure_start_date,
+            first_effective_date,
+            -- Use the earliest membership within ±30 days of onboarding/tenure/first contract
+            case 
+                when abs(date_diff('day', coalesce(onboarding_date, tenure_start_date, first_effective_date), mem.effective_from)) <= 30 then 1
+                when mem.effective_to is not null then 2
+                else 3
+            end as membership_priority,
+            row_number() over (
+                partition by mem.employee_id 
+                order by 
+                    case 
+                        when abs(date_diff('day', coalesce(onboarding_date, tenure_start_date, first_effective_date), mem.effective_from)) <= 30 then 1
+                        when mem.effective_to is not null then 2
+                        else 3
+                    end asc,
+                    mem.effective_from asc,
+                    teams.team_level desc
+            ) as rn
+        from {{ ref("dim_memberships_scd") }} mem
+        left join {{ ref("dim_teams") }} teams
+            on mem.team_id = teams.team_id
+        left join dim_employees emp
+            on mem.employee_id = cast(emp.employee_id as bigint)
+        left join first_contracts fc
+            on mem.employee_id = fc.employee_id
     ) ranked
     where rn = 1
 ),
@@ -206,6 +256,7 @@ base_employees as (
         first_contract.first_effective_date,
         first_contract.first_role_level_name,
         first_contract.first_job_catalog_level_id,
+        first_contract.first_salary_amount,
         
         -- Last contract information
         last_contract.last_effective_to,
@@ -222,9 +273,16 @@ base_employees as (
         teams.all_current_teams,
         
         -- Lowest level (most granular) team
+        lowest_team.lowest_level_team_id,
         lowest_team.lowest_level_team_name,
         lowest_team.lowest_level_team_level,
         lowest_team.lowest_level_parent_team_name,
+
+        -- First lowest level team feature
+        first_lowest_level_team.first_lowest_level_team_id,
+        first_lowest_level_team.first_lowest_level_team_name,
+        first_lowest_level_team.first_lowest_level_team_level,
+        first_lowest_level_team.first_lowest_level_parent_team_name,
         
         -- Lowest level team from climate 2025 survey (snapshot)
         lowest_team_climate.lowest_level_team_name_climate_2025,
@@ -253,6 +311,8 @@ base_employees as (
         on cast(teams.employee_id as varchar) = emp.employee_id
     left join lowest_level_team lowest_team
         on cast(lowest_team.employee_id as varchar) = emp.employee_id
+    left join first_lowest_level_team first_lowest_level_team
+        on cast(first_lowest_level_team.employee_id as varchar) = emp.employee_id
     left join lowest_level_team_climate_2025 lowest_team_climate
         on cast(lowest_team_climate.employee_id as varchar) = emp.employee_id
     left join current_market market

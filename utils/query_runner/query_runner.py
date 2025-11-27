@@ -95,9 +95,9 @@ class QueryRunner:
                 raise ValueError("GALAXY_USERNAME and GALAXY_PASSWORD environment variables must be set")
             
             # Trino connection parameters
-            trino_host = kwargs.get('host', 'factorial-dbt-test-cluster.trino.galaxy.starburst.io')
+            trino_host = kwargs.get('host', 'factorial-aws-dev-data-dbt-galaxy.trino.galaxy.starburst.io')
             trino_port = kwargs.get('port', 443)
-            trino_catalog = kwargs.get('catalog', 'factorial_datalake_production')
+            trino_catalog = kwargs.get('catalog', 'aws_dev_data_glue_catalog')
             trino_schema = kwargs.get('schema', 'data_lake_dev_xavi_silver')
             
             print(f"🔍 Connecting to Trino (Galaxy) at https://{trino_host}:{trino_port}")

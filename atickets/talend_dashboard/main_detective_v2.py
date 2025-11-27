@@ -24,7 +24,7 @@ def main():
     
     # Define filters (optional - adjust as needed)
     filters = {
-        # 'limit': 1500,  # Process first 1500 employees ordered by onboarding date desc
+        # 'limit': 10,  # Process first 10 employees ordered by onboarding date desc
         # 'onboarding_date_from': '2024-01-01',
         # 'onboarding_date_to': '2024-12-31'
     }
@@ -56,6 +56,17 @@ def main():
     print("\n" + "=" * 80)
     print(f"✅ Investigation complete! Results saved to:")
     print(f"   {output_path}")
+    print("=" * 80)
+    
+    # Create matching table in Trino
+    print("\n" + "=" * 80)
+    print("CREATING MATCHING TABLE IN TRINO")
+    print("=" * 80)
+    detective.create_matching_table_in_trino(
+        schema='data_lake_dev_xavi_silver',
+        table_name='aux_job_position_matching',
+        if_exists='replace'
+    )
     print("=" * 80)
 
 if __name__ == "__main__":

@@ -36,6 +36,8 @@ class HiredCandidateRecord:
     email: str
     hired_date: Optional[datetime]
     application_id: Optional[str]
+    application_updated_at: Optional[datetime]
+    job_posting_id: Optional[str]
     job_posting_title: Optional[str]
     # Add more fields as needed
 
@@ -70,6 +72,8 @@ class MatchedRecord:
     candidate_email: Optional[str]
     candidate_hired_date: Optional[datetime]
     candidate_application_id: Optional[str]
+    candidate_application_updated_at: Optional[datetime]
+    candidate_job_posting_id: Optional[str]
     candidate_job_posting_title: Optional[str]
     
     # Recruitment process data
@@ -84,6 +88,8 @@ class MatchedRecord:
     # Matching metadata
     match_confidence: str  # 'high', 'medium', 'low'
     match_method: str  # 'employee_id', 'email', 'name+date', etc.
+    hire_match_score: Optional[float]  # Employee → Candidate similarity (0.0 to 1.0)
+    position_match_score: Optional[float]  # Candidate → Process similarity (0.0 to 1.0)
 
 
 class TADetectiveV2:
@@ -280,6 +286,7 @@ class TADetectiveV2:
             candidate_email,
             candidate_all_names,
             CAST(application_id AS BIGINT) as application_id,
+            hired_date as application_updated_at,
             CAST(job_posting_id AS BIGINT) as job_posting_id,
             job_posting_title,
             hired_date,
@@ -312,6 +319,8 @@ class TADetectiveV2:
                 email=row.get('candidate_email', ''),
                 hired_date=row.get('hired_date'),
                 application_id=str(row['application_id']) if row.get('application_id') else None,
+                application_updated_at=row.get('application_updated_at'),
+                job_posting_id=str(row['job_posting_id']) if row.get('job_posting_id') else None,
                 job_posting_title=row.get('job_posting_title')
             ))
         
@@ -482,6 +491,8 @@ class TADetectiveV2:
                     candidate_email=None,
                     candidate_hired_date=None,
                     candidate_application_id=None,
+                    candidate_application_updated_at=None,
+                    candidate_job_posting_id=None,
                     candidate_job_posting_title=None,
                     process_id=None,
                     position_name=None,
@@ -491,7 +502,9 @@ class TADetectiveV2:
                     process_closed_date=None,
                     process_status=None,
                     match_confidence='no_match',
-                    match_method='no_candidate_found'
+                    match_method='no_candidate_found',
+                    hire_match_score=None,
+                    position_match_score=None
                 ))
             else:
                 # For each matched candidate
@@ -522,6 +535,8 @@ class TADetectiveV2:
                             candidate_email=candidate.email,
                             candidate_hired_date=candidate.hired_date,
                             candidate_application_id=candidate.application_id,
+                            candidate_application_updated_at=candidate.application_updated_at,
+                            candidate_job_posting_id=candidate.job_posting_id,
                             candidate_job_posting_title=candidate.job_posting_title,
                             process_id=process.process_id,
                             position_name=process.position_name,
@@ -531,7 +546,9 @@ class TADetectiveV2:
                             process_closed_date=process.closed_date,
                             process_status=process.status,
                             match_confidence=confidence,
-                            match_method=f"{method}+{proc_method}"
+                            match_method=f"{method}+{proc_method}",
+                            hire_match_score=similarity,
+                            position_match_score=proc_similarity
                         ))
                     else:
                         # Candidate matched but no process found
@@ -553,6 +570,8 @@ class TADetectiveV2:
                             candidate_email=candidate.email,
                             candidate_hired_date=candidate.hired_date,
                             candidate_application_id=candidate.application_id,
+                            candidate_application_updated_at=candidate.application_updated_at,
+                            candidate_job_posting_id=candidate.job_posting_id,
                             candidate_job_posting_title=candidate.job_posting_title,
                             process_id=None,
                             position_name=None,
@@ -562,7 +581,9 @@ class TADetectiveV2:
                             process_closed_date=None,
                             process_status=None,
                             match_confidence=confidence,
-                            match_method=f"{method}+no_process"
+                            match_method=f"{method}+no_process",
+                            hire_match_score=similarity,
+                            position_match_score=None
                         ))
         
         return self.matched_records
@@ -648,6 +669,76 @@ class TADetectiveV2:
         print(f"✅ Excel file saved: {filepath}")
     
     
+    def create_matching_table_in_trino(
+        self,
+        schema: str = 'data_lake_dev_xavi_silver',
+        table_name: str = 'aux_job_position_matching',
+        if_exists: str = 'replace'
+    ):
+        """
+        Create a table in Trino with the matching results
+        
+        Args:
+            schema: Target schema in Trino
+            table_name: Target table name
+            if_exists: What to do if table exists: 'fail', 'replace', 'append'
+        """
+        from utils.trino.trino_loader import TrinoLoader
+        
+        if not self.matched_records:
+            print("⚠️ No matched records to export. Run investigate() first.")
+            return
+        
+        print(f"\n🚀 Creating matching table in Trino: {schema}.{table_name}")
+        
+        # Prepare data for the matching table
+        matching_data = []
+        for match in self.matched_records:
+            # Only include records that have both position and application data
+            if match.process_id and match.candidate_application_id and match.employee_id:
+                matching_data.append({
+                    'position_id': match.process_id,
+                    'application_id': match.candidate_application_id,
+                    'application_updated_at': match.candidate_application_updated_at,
+                    'employee_id': match.employee_id,
+                    'hire_match_score': match.hire_match_score,
+                    'position_match_score': match.position_match_score
+                })
+        
+        if not matching_data:
+            print("⚠️ No complete matching records to export (need position_id, application_id, and employee_id)")
+            return
+        
+        # Create DataFrame
+        df = pd.DataFrame(matching_data)
+        
+        # Ensure proper data types
+        df['application_updated_at'] = pd.to_datetime(df['application_updated_at'])
+        df['hire_match_score'] = df['hire_match_score'].astype(float)
+        df['position_match_score'] = df['position_match_score'].astype(float)
+        
+        print(f"📊 Prepared {len(df)} matching records for export")
+        
+        # Load to Trino
+        loader = TrinoLoader(schema=schema)
+        loader.create_table_from_dataframe(
+            df=df,
+            table_name=table_name,
+            schema=schema,
+            if_exists=if_exists,
+            column_types={
+                'position_id': 'VARCHAR',
+                'application_id': 'VARCHAR',
+                'application_updated_at': 'TIMESTAMP',
+                'employee_id': 'VARCHAR',
+                'hire_match_score': 'DOUBLE',
+                'position_match_score': 'DOUBLE'
+            }
+        )
+        
+        print(f"✅ Matching table created successfully: {schema}.{table_name}")
+    
+    
     # ==================== Helper Methods ====================
     
     def _employees_to_df(self) -> pd.DataFrame:
@@ -682,6 +773,8 @@ class TADetectiveV2:
                 'email': cand.email,
                 'hired_date': cand.hired_date,
                 'application_id': cand.application_id,
+                'application_updated_at': cand.application_updated_at,
+                'job_posting_id': cand.job_posting_id,
                 'job_posting_title': cand.job_posting_title
             })
         
@@ -727,6 +820,8 @@ class TADetectiveV2:
                 'candidate_email': match.candidate_email,
                 'candidate_hired_date': match.candidate_hired_date,
                 'candidate_application_id': match.candidate_application_id,
+                'candidate_application_updated_at': match.candidate_application_updated_at,
+                'candidate_job_posting_id': match.candidate_job_posting_id,
                 'candidate_job_posting_title': match.candidate_job_posting_title,
                 'process_id': match.process_id,
                 'position_name': match.position_name,
@@ -736,7 +831,9 @@ class TADetectiveV2:
                 'process_closed_date': match.process_closed_date,
                 'process_status': match.process_status,
                 'match_confidence': match.match_confidence,
-                'match_method': match.match_method
+                'match_method': match.match_method,
+                'hire_match_score': match.hire_match_score,
+                'position_match_score': match.position_match_score
             })
         
         return pd.DataFrame(data)
