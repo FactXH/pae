@@ -141,7 +141,8 @@ const ConfigurableMetricsCard = ({
     setError(null);
 
     try {
-      const result = await apiClient.executeSQL(query, database);
+      // Always use 'galaxy' as the database regardless of prop value
+      const result = await apiClient.executeSQL(query, 'trino');
       
       if (result.columns && result.data) {
         // Convert array of arrays to array of objects

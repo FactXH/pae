@@ -116,6 +116,56 @@ lowest_level_team as (
     where rn = 1
 ),
 
+-- Get the most granular team from climate 2025 survey (snapshot at survey time)
+lowest_level_team_climate_2025 as (
+    select 
+        employee_id,
+        team_name as lowest_level_team_name_climate_2025,
+        team_level as lowest_level_team_level_climate_2025,
+        parent_team_name as lowest_level_parent_team_name_climate_2025
+    from (
+        select 
+            mem.employee_id,
+            teams.team_name,
+            teams.team_level,
+            teams.parent_team_name,
+            row_number() over (
+                partition by mem.employee_id 
+                order by 
+                    teams.team_level desc, 
+                    case when teams.team_name = 'Engineering' then 1 else 0 end asc,
+                    teams.team_name asc
+            ) as rn
+        from {{ ref("dim_memberships_climate_2025") }} mem
+        left join {{ ref("dim_teams") }} teams
+            on mem.team_id = teams.team_id
+    ) ranked
+    where rn = 1
+),
+
+-- Get the current market for employees assigned to a market
+current_market as (
+    select 
+        employee_id,
+        market_name as current_market_name,
+        market_level as current_market_level
+    from (
+        select 
+            mem.employee_id,
+            markets.market_name,
+            markets.market_level,
+            row_number() over (
+                partition by mem.employee_id 
+                order by mem.effective_from desc
+            ) as rn
+        from {{ ref("dim_memberships_scd") }} mem
+        inner join {{ ref("dim_markets") }} markets
+            on mem.team_id = markets.market_id
+        where mem.is_current = true
+    ) ranked
+    where rn = 1
+),
+
 salary_changes_2025 as (
     select 
         cont.employee_id,
@@ -176,6 +226,15 @@ base_employees as (
         lowest_team.lowest_level_team_level,
         lowest_team.lowest_level_parent_team_name,
         
+        -- Lowest level team from climate 2025 survey (snapshot)
+        lowest_team_climate.lowest_level_team_name_climate_2025,
+        lowest_team_climate.lowest_level_team_level_climate_2025,
+        lowest_team_climate.lowest_level_parent_team_name_climate_2025,
+        
+        -- Current market (if employee is assigned to a market)
+        market.current_market_name,
+        market.current_market_level,
+        
         -- 2025 salary changes
         sal_2025.distinct_salaries_2025,
         sal_2025.salary_increase_pct_2025,
@@ -194,6 +253,10 @@ base_employees as (
         on cast(teams.employee_id as varchar) = emp.employee_id
     left join lowest_level_team lowest_team
         on cast(lowest_team.employee_id as varchar) = emp.employee_id
+    left join lowest_level_team_climate_2025 lowest_team_climate
+        on cast(lowest_team_climate.employee_id as varchar) = emp.employee_id
+    left join current_market market
+        on cast(market.employee_id as varchar) = emp.employee_id
     left join salary_changes_2025 sal_2025
         on cast(sal_2025.employee_id as varchar) = emp.employee_id
     left join roles_2025

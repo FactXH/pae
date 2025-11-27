@@ -21,106 +21,142 @@ import ConfigurableMetricsCard from '../components/ConfigurableMetricsCard';
 /**
  * Whiteboard Page
  * Select saved queries and views to render them with their configurations
- * URL params: ?query={queryId}&view={viewId}
+ * 
+ * URL params:
+ * - ?view={viewId} - Load view (automatically includes query)
+ * - ?query={queryId} - Load query with default configuration
  */
 function Whiteboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [queries, setQueries] = useState([]);
   const [views, setViews] = useState([]);
-  const [selectedQueryId, setSelectedQueryId] = useState(searchParams.get('query') || '');
-  const [selectedViewId, setSelectedViewId] = useState(searchParams.get('view') || '');
+  const [selectedQueryId, setSelectedQueryId] = useState('');
+  const [selectedViewId, setSelectedViewId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [viewData, setViewData] = useState(null);
+  const [renderData, setRenderData] = useState(null); // { query, config, viewId }
 
-  // Load queries on mount
+  // Load queries and views on mount
   useEffect(() => {
     loadQueries();
+    loadAllViews();
   }, []);
 
-  // Load view directly from URL if both query and view IDs are present
+  // Handle URL parameters on mount and changes
   useEffect(() => {
-    const queryId = searchParams.get('query');
     const viewId = searchParams.get('view');
+    const queryId = searchParams.get('query');
     
-    if (queryId && viewId) {
-      setSelectedQueryId(queryId);
+    if (viewId) {
+      // View ID takes priority - load view (which includes query)
       setSelectedViewId(viewId);
-      loadViewData(viewId);
+      loadFromViewId(viewId);
+    } else if (queryId) {
+      // Query ID only - load query with default config
+      setSelectedQueryId(queryId);
+      loadFromQueryId(queryId);
+    } else {
+      // No params - reset
+      setRenderData(null);
+      setSelectedQueryId('');
+      setSelectedViewId('');
     }
   }, [searchParams]);
 
-  // Load views when query is selected
-  useEffect(() => {
-    if (selectedQueryId) {
-      loadViews(selectedQueryId);
-    } else {
-      setViews([]);
-      setSelectedViewId('');
+  const loadQueries = async () => {
+    try {
+      const data = await apiClient.getQueries();
+      setQueries(data);
+    } catch (err) {
+      console.error('Error loading queries:', err);
     }
-  }, [selectedQueryId]);
+  };
 
-  // Update URL when selections change
-  useEffect(() => {
-    if (selectedQueryId && selectedViewId) {
-      setSearchParams({ query: selectedQueryId, view: selectedViewId });
+  const loadAllViews = async () => {
+    try {
+      const data = await apiClient.getQueryViews();
+      setViews(data);
+    } catch (err) {
+      console.error('Error loading views:', err);
+    }
+  };
+
+  const loadFromViewId = async (viewId) => {
+    setLoading(true);
+    setError(null);
+    setRenderData(null);
+
+    try {
+      const viewData = await apiClient.getQueryView(viewId);
+      
+      // View includes the full query object and config
+      setRenderData({
+        query: viewData.query, // Full query object with sql_query, database, etc.
+        config: viewData.config,
+        viewId: viewData.id,
+        viewName: viewData.name,
+        viewDescription: viewData.description
+      });
+      
+      setSelectedQueryId(viewData.query.id.toString());
+    } catch (err) {
+      setError(`Failed to load view: ${err.message}`);
+      console.error('Error loading view:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFromQueryId = async (queryId) => {
+    setLoading(true);
+    setError(null);
+    setRenderData(null);
+
+    try {
+      const queryData = await apiClient.getQuery(queryId);
+      
+      // Query only - use default config (no view)
+      setRenderData({
+        query: queryData, // Full query object with sql_query, database, etc.
+        config: null, // No config - will use defaults
+        viewId: null,
+        viewName: null,
+        viewDescription: null
+      });
+    } catch (err) {
+      setError(`Failed to load query: ${err.message}`);
+      console.error('Error loading query:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuerySelect = (queryId) => {
+    setSelectedQueryId(queryId);
+    setSelectedViewId('');
+    if (queryId) {
+      setSearchParams({ query: queryId });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const handleViewSelect = (viewId) => {
+    setSelectedViewId(viewId);
+    if (viewId) {
+      setSearchParams({ view: viewId });
     } else if (selectedQueryId) {
       setSearchParams({ query: selectedQueryId });
     } else {
       setSearchParams({});
     }
-  }, [selectedQueryId, selectedViewId, setSearchParams]);
-
-  const loadQueries = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiClient.getQueries();
-      setQueries(data);
-    } catch (err) {
-      setError(`Failed to load queries: ${err.message}`);
-      console.error('Error loading queries:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadViews = async (queryId) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiClient.getQueryViews();
-      // Filter views for the selected query
-      const filteredViews = data.filter(view => view.query === parseInt(queryId));
-      setViews(filteredViews);
-    } catch (err) {
-      setError(`Failed to load views: ${err.message}`);
-      console.error('Error loading views:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadViewData = async (viewId = selectedViewId) => {
-    if (!viewId) return;
-
-    setLoading(true);
-    setError(null);
-    setViewData(null);
-
-    try {
-      const data = await apiClient.getQueryView(viewId);
-      setViewData(data);
-    } catch (err) {
-      setError(`Failed to load view data: ${err.message}`);
-      console.error('Error loading view data:', err);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const selectedQuery = queries?.find(q => q.id === parseInt(selectedQueryId));
   const selectedView = views?.find(v => v.id === parseInt(selectedViewId));
+  const filteredViews = selectedQueryId 
+    ? views?.filter(v => v.query === parseInt(selectedQueryId)) 
+    : [];
 
   return (
     <Box>
@@ -138,7 +174,7 @@ function Whiteboard() {
             <InputLabel>Select Query</InputLabel>
             <Select
               value={selectedQueryId}
-              onChange={(e) => setSelectedQueryId(e.target.value)}
+              onChange={(e) => handleQuerySelect(e.target.value)}
               label="Select Query"
               disabled={loading}
             >
@@ -155,17 +191,17 @@ function Whiteboard() {
 
           {/* View Selector */}
           <FormControl sx={{ minWidth: 300 }} disabled={!selectedQueryId}>
-            <InputLabel>Select View</InputLabel>
+            <InputLabel>Select View (Optional)</InputLabel>
             <Select
               value={selectedViewId}
-              onChange={(e) => setSelectedViewId(e.target.value)}
-              label="Select View"
+              onChange={(e) => handleViewSelect(e.target.value)}
+              label="Select View (Optional)"
               disabled={loading || !selectedQueryId}
             >
               <MenuItem value="">
-                <em>None</em>
+                <em>Default View</em>
               </MenuItem>
-              {views?.map((view) => (
+              {filteredViews?.map((view) => (
                 <MenuItem key={view.id} value={view.id}>
                   {view.name}
                 </MenuItem>
@@ -173,21 +209,13 @@ function Whiteboard() {
             </Select>
           </FormControl>
 
-          {/* Load Button */}
-          <Button
-            variant="contained"
-            onClick={loadViewData}
-            disabled={!selectedViewId || loading}
-            startIcon={loading ? <CircularProgress size={16} /> : <RefreshIcon />}
-            sx={{ height: 56 }}
-          >
-            Load View
-          </Button>
-
-          {/* Refresh Queries Button */}
+          {/* Refresh Button */}
           <Button
             variant="outlined"
-            onClick={loadQueries}
+            onClick={() => {
+              loadQueries();
+              loadAllViews();
+            }}
             disabled={loading}
             startIcon={<RefreshIcon />}
             sx={{ height: 56 }}
@@ -197,25 +225,28 @@ function Whiteboard() {
         </Box>
 
         {/* Selected Info */}
-        {selectedQuery && (
+        {renderData && (
           <Box mt={2}>
             <Divider sx={{ mb: 2 }} />
             <Typography variant="subtitle2" gutterBottom>
-              <strong>Query:</strong> {selectedQuery.name}
+              <strong>Query:</strong> {renderData.query.name}
             </Typography>
-            {selectedQuery.description && (
+            {renderData.query.description && (
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                {selectedQuery.description}
+                {renderData.query.description}
               </Typography>
             )}
             <Box display="flex" gap={1} mt={1}>
-              <Chip label={`Database: ${selectedQuery.database}`} size="small" />
-              <Chip label={`ID: ${selectedQuery.id}`} size="small" variant="outlined" />
-              {selectedView && (
+              <Chip label={`Database: ${renderData.query.database}`} size="small" />
+              <Chip label={`Query ID: ${renderData.query.id}`} size="small" variant="outlined" />
+              {renderData.viewId && (
                 <>
-                  <Chip label={`View: ${selectedView.name}`} size="small" color="primary" />
-                  <Chip label={`View ID: ${selectedView.id}`} size="small" color="primary" variant="outlined" />
+                  <Chip label={`View: ${renderData.viewName}`} size="small" color="primary" />
+                  <Chip label={`View ID: ${renderData.viewId}`} size="small" color="primary" variant="outlined" />
                 </>
+              )}
+              {!renderData.viewId && (
+                <Chip label="Default View" size="small" color="default" />
               )}
             </Box>
           </Box>
@@ -228,23 +259,23 @@ function Whiteboard() {
         )}
       </Paper>
 
-      {/* Render the View */}
-      {viewData && viewData.query && viewData.config && (
+      {/* Render the Component */}
+      {renderData && renderData.query && (
         <Box>
           <Divider sx={{ mb: 3 }} />
           <ConfigurableMetricsCard
-            title={viewData.config.title || viewData.name}
-            query={viewData.query.sql_query}
-            database={viewData.query.database}
-            thresholds={viewData.config.thresholds || { red: 2.2, yellow: 4.0 }}
-            description={viewData.description}
-            initialConfig={viewData.config}
-            existingQueryId={viewData.query.id}
+            title={renderData.config?.title || renderData.viewName || renderData.query.name}
+            query={renderData.query.sql_query}
+            database={renderData.query.database}
+            thresholds={renderData.config?.thresholds || { red: 2.2, yellow: 4.0 }}
+            description={renderData.viewDescription || renderData.query.description || ''}
+            initialConfig={renderData.config} // null if no view selected (uses defaults)
+            existingQueryId={renderData.query.id}
           />
         </Box>
       )}
 
-      {!viewData && !loading && (
+      {!renderData && !loading && (
         <Paper elevation={1} sx={{ p: 4, bgcolor: '#f9f9f9' }}>
           <Typography variant="h6" gutterBottom fontWeight="600">
             📋 Available Queries
@@ -282,26 +313,46 @@ function Whiteboard() {
             <>
               <Divider sx={{ my: 3 }} />
               <Typography variant="h6" gutterBottom fontWeight="600">
-                ⚙️ Available Views for Selected Query
+                ⚙️ All Available Views
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {views?.map((view) => (
-                  <Paper key={view.id} elevation={0} sx={{ p: 2, border: '1px solid #e0e0e0' }}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight="600">
-                          {view.name}
-                        </Typography>
-                        {view.description && (
-                          <Typography variant="body2" color="text.secondary">
-                            {view.description}
+                {views?.map((view) => {
+                  const viewQuery = queries?.find(q => q.id === view.query);
+                  return (
+                    <Paper 
+                      key={view.id} 
+                      elevation={0} 
+                      sx={{ 
+                        p: 2, 
+                        border: '1px solid #e0e0e0',
+                        cursor: 'pointer',
+                        '&:hover': { bgcolor: '#f5f5f5' }
+                      }}
+                      onClick={() => setSearchParams({ view: view.id })}
+                    >
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight="600">
+                            {view.name}
                           </Typography>
-                        )}
+                          {view.description && (
+                            <Typography variant="body2" color="text.secondary">
+                              {view.description}
+                            </Typography>
+                          )}
+                          {viewQuery && (
+                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                              Query: {viewQuery.name}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Box display="flex" gap={1}>
+                          <Chip label={`View ID: ${view.id}`} size="small" color="primary" variant="outlined" />
+                        </Box>
                       </Box>
-                      <Chip label={`View ID: ${view.id}`} size="small" color="primary" variant="outlined" />
-                    </Box>
-                  </Paper>
-                ))}
+                    </Paper>
+                  );
+                })}
               </Box>
             </>
           )}

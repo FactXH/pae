@@ -178,7 +178,8 @@ const ConfigurableMetricsCard = ({
     setError(null);
 
     try {
-      const result = await apiClient.executeSQL(query, database);
+      // Always use 'galaxy' as the database
+      const result = await apiClient.executeSQL(query, 'trino');
       
       if (result.columns && result.data) {
         // Convert array of arrays to array of objects
@@ -245,7 +246,8 @@ const ConfigurableMetricsCard = ({
     setError(null);
 
     try {
-      const result = await apiClient.executeSQL(editableQuery, database);
+      // Always use 'galaxy' as the database
+      const result = await apiClient.executeSQL(editableQuery, 'trino');
       
       if (result.columns && result.data) {
         // Convert array of arrays to array of objects
@@ -825,7 +827,7 @@ const ConfigurableMetricsCard = ({
       const queryPayload = {
         name: queryName,
         description: queryDescription || `Query for ${title}`,
-        sql_query: query,
+        sql_query: editableQuery, // Use editableQuery from the editor, not the prop
         database: database
       };
 
