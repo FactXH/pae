@@ -50,6 +50,9 @@ SELECT
     -- For proper weighted averages in ConfigurableMetricsCard
     1 AS employee_count__count__sum,
     
+    -- Climate response indicator (1 if responded, 0 if not)
+    CASE WHEN emp.has_responded_to_climate = TRUE THEN 1 ELSE 0 END AS has_climate_response__count__sum,
+    
     -- Contract metrics (counts)
     emp.nr_contracts AS nr_contracts__count__sum,
     emp.distinct_salaries_2025 AS salary_changes_2025__count__sum,
@@ -171,10 +174,18 @@ LEFT JOIN data_lake_dev_xavi_gold.gold_climate_2025_employees mgr2
 LEFT JOIN data_lake_dev_xavi_gold.gold_climate_2025_employees mgr3
     ON mgr2.athena_manager_email = mgr3.email
 
-WHERE emp.has_responded_to_climate = TRUE
+-- WHERE emp.has_responded_to_climate = TRUE
 
 -- Order by employee name for consistent sorting
 ORDER BY emp.full_name
+
+
+
+
+
+
+
+
 
 
 
