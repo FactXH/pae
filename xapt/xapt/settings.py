@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "corsheaders",  # CORS headers for API communication
     "rest_framework",  # Django REST Framework
     "engagement",  # Our engagement app with Employee, BaseModel, RelatedModel
+    "queries",  # Queries app for managing reusable SQL queries and views
 ]
 
 MIDDLEWARE = [

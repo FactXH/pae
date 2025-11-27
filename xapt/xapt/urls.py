@@ -21,4 +21,5 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include('xapt.front_api_urls')),  # Frontend API endpoints
+    path("api/", include('queries.urls')),  # Queries API endpoints
 ]

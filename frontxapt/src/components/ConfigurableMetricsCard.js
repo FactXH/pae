@@ -26,10 +26,17 @@ import {
   TableSortLabel,
   Tabs,
   Tab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton,
 } from '@mui/material';
 import StorageIcon from '@mui/icons-material/Storage';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SaveIcon from '@mui/icons-material/Save';
 import apiClient from '../services/apiClient';
 import HistogramSlider from './HistogramSlider';
 import './ConfigurableMetricsCard.css';
@@ -92,6 +99,12 @@ const ConfigurableMetricsCard = ({
   const [visibleColumns, setVisibleColumns] = useState([]);
   const [columnSearchFilter, setColumnSearchFilter] = useState('');
   const [configTab, setConfigTab] = useState(0);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportQueryName, setExportQueryName] = useState('');
+  const [exportViewName, setExportViewName] = useState('');
+  const [exportDescription, setExportDescription] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
     if (query) {
@@ -636,6 +649,66 @@ const ConfigurableMetricsCard = ({
   const filterRatio = getFilterRatio();
   const filterFunnel = getFilterFunnel();
 
+  // Handle exporting query and view configuration to backend
+  const handleExport = async () => {
+    if (!exportQueryName || !exportViewName) {
+      alert('Please provide both Query Name and View Name');
+      return;
+    }
+
+    setExportLoading(true);
+    setExportSuccess(false);
+
+    try {
+      // 1. Create or get Query
+      const queryPayload = {
+        name: exportQueryName,
+        description: exportDescription || `Query for ${title}`,
+        sql_query: query,
+        database: database
+      };
+
+      let queryResponse = await apiClient.post('/queries/', queryPayload);
+      const queryId = queryResponse.data.id;
+
+      // 2. Create QueryView with current configuration
+      const viewPayload = {
+        name: exportViewName,
+        description: exportDescription || `View for ${title}`,
+        query: queryId,
+        config: {
+          title: title,
+          thresholds: thresholds,
+          dimensionFilters: dimensionFilters,
+          dimensionExcludes: dimensionExcludes,
+          enabledFilters: enabledFilters,
+          metricRanges: metricRanges,
+          aggMetricRanges: aggMetricRanges,
+          visibleColumns: visibleColumns,
+          selectedDimensions: selectedDimensions,
+          sortConfig: sortConfig
+        }
+      };
+
+      await apiClient.post('/query-views/', viewPayload);
+      
+      setExportSuccess(true);
+      setTimeout(() => {
+        setExportDialogOpen(false);
+        setExportQueryName('');
+        setExportViewName('');
+        setExportDescription('');
+        setExportSuccess(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Export error:', error);
+      alert(`Error exporting: ${error.response?.data?.name?.[0] || error.message}`);
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   return (
     <Card className="configurable-metrics-card" elevation={3} sx={{ m: 0 }}>
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
@@ -644,13 +717,23 @@ const ConfigurableMetricsCard = ({
           <Typography variant="h6" fontWeight="600" sx={{ fontSize: '1.1rem' }}>
             {title}
           </Typography>
-          <Chip 
-            icon={<StorageIcon />}
-            label={database.toUpperCase()} 
-            size="small" 
-            variant="outlined"
-            sx={{ height: 20 }}
-          />
+          <Box display="flex" alignItems="center" gap={1}>
+            <IconButton 
+              size="small" 
+              onClick={() => setExportDialogOpen(true)}
+              sx={{ p: 0.5 }}
+              title="Save query configuration"
+            >
+              <SaveIcon fontSize="small" />
+            </IconButton>
+            <Chip 
+              icon={<StorageIcon />}
+              label={database.toUpperCase()} 
+              size="small" 
+              variant="outlined"
+              sx={{ height: 20 }}
+            />
+          </Box>
         </Box>
 
         {description && (
@@ -1204,6 +1287,55 @@ const ConfigurableMetricsCard = ({
           </>
         )}
       </CardContent>
+
+      {/* Export Dialog */}
+      <Dialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Save Query Configuration</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              label="Query Name"
+              value={exportQueryName}
+              onChange={(e) => setExportQueryName(e.target.value)}
+              fullWidth
+              required
+              helperText="Unique name for the SQL query"
+            />
+            <TextField
+              label="View Name"
+              value={exportViewName}
+              onChange={(e) => setExportViewName(e.target.value)}
+              fullWidth
+              required
+              helperText="Unique name for this specific configuration"
+            />
+            <TextField
+              label="Description (Optional)"
+              value={exportDescription}
+              onChange={(e) => setExportDescription(e.target.value)}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            {exportSuccess && (
+              <Alert severity="success">Successfully saved!</Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setExportDialogOpen(false)} disabled={exportLoading}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleExport} 
+            variant="contained" 
+            disabled={exportLoading || !exportQueryName || !exportViewName}
+            startIcon={exportLoading ? <CircularProgress size={16} /> : <SaveIcon />}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
