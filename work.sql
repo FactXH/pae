@@ -766,3 +766,15 @@ from data_lake_dev_xavi_silver.base_factorial_climate_2025_answers climate
 left join data_lake_dev_xavi_silver.fact_employees fe
 on climate.question_respondent_access_id = fe.access_id
 where full_name like 'David Ca%'
+
+
+;
+
+select 
+    manager_email,
+    manager_full_name,
+    reporting_level,
+    level_employee_count,
+    employee_names
+from 
+data_lake_dev_xavi_gold.gold_climate_2025_by_manager

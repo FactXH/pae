@@ -37,7 +37,8 @@ responses_with_manager_level AS (
         mle.manager_full_name,
         mle.manager_email,
         mle.reporting_level,
-        mle.level_employee_count
+        mle.level_employee_count,
+        e.full_name
     FROM fact_responses f
     INNER JOIN employees e ON f.question_respondent_access_id = e.access_id
     INNER JOIN manager_level_employees mle ON mle.employee_id_bigint = e.employee_id
@@ -174,7 +175,19 @@ SELECT
     
     ROUND(AVG(CAST(work_life_balance AS DOUBLE)), 2) AS avg_work_life_balance,
     COUNT(work_life_balance) AS count_work_life_balance,
-    ROUND(VAR_SAMP(CAST(work_life_balance AS DOUBLE)), 2) AS var_work_life_balance
+    ROUND(VAR_SAMP(CAST(work_life_balance AS DOUBLE)), 2) AS var_work_life_balance,
+
+    -- Text questions: ARRAY_AGG
+    ARRAY_JOIN(ARRAY_AGG(grateful_for), ' | ') AS all_grateful_for,
+    ARRAY_JOIN(ARRAY_AGG(would_like_to_see_more), ' | ') AS all_would_like_to_see_more,
+    ARRAY_JOIN(ARRAY_AGG(additional_feedback), ' | ') AS all_additional_feedback,
+
+    -- Single choice questions: ARRAY_AGG
+    ARRAY_JOIN(ARRAY_AGG(tenure), ' | ') AS all_tenure,
+    ARRAY_JOIN(ARRAY_AGG(gender), ' | ') AS all_gender,
+
+    -- Employee names: ARRAY_AGG
+    ARRAY_AGG(full_name) AS employee_names
 
 FROM responses_with_manager_level
 GROUP BY 
