@@ -1,0 +1,71 @@
+Engineer manager:
+Old one: https://app.factorialhr.com/recruitment/jobs/134399/applications
+Actual one: https://app.factorialhr.com/recruitment/jobs/248463/applications
+Finance domain:
+Old one:
+Senior: https://app.factorialhr.com/recruitment/jobs/227422/applications
+Staff: https://app.factorialhr.com/recruitment/jobs/235705/applications
+Actual:
+Senior: https://app.factorialhr.com/recruitment/jobs/248488/applications
+Staff: https://app.factorialhr.com/recruitment/jobs/248493/applications
+Talent domain:
+Old one: https://app.factorialhr.com/recruitment/jobs/41921/applications
+Actual: https://app.factorialhr.com/recruitment/jobs/248312/applications
+Operations domain:
+Old one
+Payroll: https://app.factorialhr.com/recruitment/jobs/238793/applications
+Time:https://app.factorialhr.com/recruitment/jobs/248310/applications
+Actual: https://app.factorialhr.com/recruitment/jobs/248304/applications
+Platform domain:
+Old one:
+Backoffice (Senior): https://app.factorialhr.com/recruitment/jobs/248466/applications
+DX: https://app.factorialhr.com/recruitment/jobs/231526/applications
+    https://app.factorialhr.com/recruitment/jobs/239670/applications
+CIAM:https://app.factorialhr.com/recruitment/jobs/235148/applications
+Foundations: https://app.factorialhr.com/recruitment/jobs/228957/applications
+Actual:
+API: https://app.factorialhr.com/recruitment/jobs/258829/applications
+DX: https://app.factorialhr.com/recruitment/jobs/261530/applications
+New ones opened recently:
+CIAM: https://app.factorialhr.com/recruitment/jobs/265724/applications
+Backoffice (Mid/senior): https://app.factorialhr.com/recruitment/jobs/273662/applications
+
+
+
+ENGINEERING MANAGER:
+    OLD: 134399
+    NEW: 248463
+
+FINANCE - SENIOR:
+    OLD: 227422
+    NEW: 248488
+
+FINANCE - STAFF:
+    OLD: 235705
+    NEW: 248493
+
+TALENT:
+    OLD: 41921
+    NEW: 248312
+
+OPERATIONS- PAYROLL:
+    OLD: 238793
+    NEW: 248304
+
+OPERATIONS - TIME:
+    OLD: 248310
+    NEW: 248304
+
+PLATFORM - BACKOFFICE (SENIOR):
+    OLD: 248466
+
+PLATFORM - DX:
+    OLD: 231526, 239670
+    NEW: 261530
+
+PLATFORM - CIAM:
+    OLD: 235148
+    NEW: 265724
+
+PLATFORM - FOUNDATIONS:
+    OLD: 228957

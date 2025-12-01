@@ -968,3 +968,150 @@ ALTER TABLE aws_dev_data_glue_catalog.data_lake_dev_xavi_silver.fact_teams SET A
 ALTER TABLE aws_dev_data_glue_catalog.data_lake_dev_xavi_gold.gold_climate_2025_answers SET AUTHORIZATION ROLE analytics_role;
 ALTER TABLE aws_dev_data_glue_catalog.data_lake_dev_xavi_gold.gold_climate_2025_by_manager SET AUTHORIZATION ROLE analytics_role;
 ALTER TABLE aws_dev_data_glue_catalog.data_lake_dev_xavi_gold.gold_climate_2025_employees SET AUTHORIZATION ROLE analytics_role;
+
+
+
+;
+
+SELECT table_schema, table_name
+FROM information_schema.columns
+WHERE 
+table_name like 'airbyte_airtable_people_people_tod%'
+-- table_schema LIKE 'data_lake_dev_xavi_%';
+
+;
+
+SELECT *
+FROM information_schema.columns
+
+;
+
+select * from airbyte_airtable_people_people_todos_sync_view_tblmwfnk5fykznky7
+limit 1
+
+
+
+"_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","nss","onb","city","irpf","role","team","creat","email","level","match","teams","market","nombre","office","squads","status","género","id_type","apellido","approval","benefits","birthday","no_entra","zip_code","come_back","esmanager","lusha_(h)","main_team","recibido?","reporters","introw_(h)","team_check","travelperk","aircall_(h)","employee_id","hubspot_(e)","id_empleado","meet_jordi!","_airtable_id","a&r_comments","centro_coste","compensation","job_position","lmt_noborrar","prl_check_on","t&c_comments","asistencia_ob","bitwarden_(y)","entidad_legal","manager_email","prl_check_off","team_comments","address_line_1","email_personal","email_temporal","employee_group","rol_(new_hire)","asignar_equipos","conteo_managers","market_specific","nombre_completo","script_managers","culture_comments","employee_trigger","fecha_onboarding","level_(new_hire)","manager_comments","product_comments","benefits_comments","email_last_(auto)","factorial_product","fecha_offboarding","rate_team_members","rate_your_manager","terminated_reason","work-life_balance","equipment_delivery","varios_last_(auto)","días_en_la_empresa","posicion_(new_hire)","prof._dev._comments","_airtable_table_name","afterworks_&_rituals","owner_exit_interview","permanencia_(months)","rate_overall_culture","room_for_improvement","w-l_balance_comments","where_are_you_going?","chivato_equipos_auto_","compensation_comments","email_personal_(temp)","most_positive_aspects","recommend_to_a_friend","última_modificación","_airtable_created_time","last_modified_calendar","main_reason_of_leaving","come_back_circumstances","periodo_de_prueba_status","professional_development","equipment_delivery_update","fecha_onboarding_(save)_2","fin_del_periodo_de_prueba","jira_(poyecto_attila)_(y)","tipo_de_baja_simplificada","invitaciones_calendar_work","is_your_salary_increasing?","comment_reasons_for_leaving","secondary_reason_of_leaving","transparency_&_communication","where_will_be_the_onboarding","mail_created_(automatizacion)","mail_creation_(automatizacion)","preferred_job_title_(new_hire)","state_/_province_/_region_/_county","email_temporal_last_modified_(automatizacion)","automatización_(coordinar_equipos_kpi_con_it_employees)","no_entra_(last)","bo_(i)","akiles_(alvaro)","motivation","recognition_","motivation_comments","recognition_comments","qobra_(a)","modjo","onb_oficial"
+
+
+;
+
+
+select * from (
+    values
+        -- Engineer Manager
+        ('Engineer Manager', null, '134399', '248463'),
+
+        -- Finance
+        ('Finance', 'Senior', '227422', '248488'),
+        ('Finance', 'Staff',  '235705', '248493'),
+
+        -- Talent
+        ('Talent', null, '41921', '248312'),
+
+        -- Operations
+        ('Operations', 'Payroll', '238793', '248304'),
+        ('Operations', 'Time',    '248310', '248304'),
+
+        -- Platform (old)
+        ('Platform', 'Backoffice (Senior, old)', '248466', null),
+        ('Platform', 'DX (old)', '231526', null),
+        ('Platform', 'DX (old 2)', '239670', null),
+        ('Platform', 'CIAM (old)', '235148', null),
+        ('Platform', 'Foundations (old)', '228957', null),
+
+        -- Platform (actual)
+        ('Platform', 'API', null, '258829'),
+        ('Platform', 'DX', null, '261530'),
+        ('Platform', 'CIAM (new)', null, '265724'),
+        ('Platform', 'Backoffice (Mid/Senior)', null, '273662')
+) as t(domain, role, old_id, new_id);;
+
+
+
+with raw_data as (
+
+    -- ENGINEERING MANAGER
+    select 'ENGINEERING' as team, 'MANAGER' as sub_classification, 'OLD' as status, 134399 as id
+    union all
+    select 'ENGINEERING', 'MANAGER', 'NEW', 248463
+
+    -- FINANCE - SENIOR
+    union all
+    select 'FINANCE', 'SENIOR', 'OLD', 227422
+    union all
+    select 'FINANCE', 'SENIOR', 'NEW', 248488
+
+    -- FINANCE - STAFF
+    union all
+    select 'FINANCE', 'STAFF', 'OLD', 235705
+    union all
+    select 'FINANCE', 'STAFF', 'NEW', 248493
+
+    -- TALENT
+    union all
+    select 'TALENT', null, 'OLD', 41921
+    union all
+    select 'TALENT', null, 'NEW', 248312
+
+    -- OPERATIONS - PAYROLL
+    union all
+    select 'OPERATIONS', 'PAYROLL', 'OLD', 238793
+    union all
+    select 'OPERATIONS', 'PAYROLL', 'NEW', 248304
+
+    -- OPERATIONS - TIME
+    union all
+    select 'OPERATIONS', 'TIME', 'OLD', 248310
+    union all
+    select 'OPERATIONS', 'TIME', 'NEW', 248304
+
+    -- PLATFORM - BACKOFFICE (SENIOR)
+    union all
+    select 'PLATFORM', 'BACKOFFICE (SENIOR)', 'OLD', 248466
+
+    -- PLATFORM - DX (two OLD IDs)
+    union all
+    select 'PLATFORM', 'DX', 'OLD', 231526
+    union all
+    select 'PLATFORM', 'DX', 'OLD', 239670
+    union all
+    select 'PLATFORM', 'DX', 'NEW', 261530
+
+    -- PLATFORM - CIAM
+    union all
+    select 'PLATFORM', 'CIAM', 'OLD', 235148
+    union all
+    select 'PLATFORM', 'CIAM', 'NEW', 265724
+
+    -- PLATFORM - FOUNDATIONS
+    union all
+    select 'PLATFORM', 'FOUNDATIONS', 'OLD', 228957
+
+)
+
+select * from raw_data
+
+
+;
+select * from data_lake_dev_xavi_gold.fact_engineering_applications;
+
+
+;
+
+select 
+    team as team__dim,
+    sub_classification as sub_classification__dim,
+    status as job_posting_status__dim,
+    job_posting_title as job_posting_title__dim,
+    year(application_created_at) as application_year__dim,
+    month(application_created_at) as application_month__dim,
+    concat(
+        cast(year(application_created_at) AS varchar), 
+        '-', 
+        lpad(CAST(month(application_created_at) AS varchar), 2, '0')
+        ) as application_year_month__dim,
+    application_source as application_source__dim,
+    1 as count__metric__sum,
+    case when is_hired = 'HIRED' then 1 else 0 end as count_hired__metric__sum
+from data_lake_dev_xavi_gold.fact_engineering_applications;
