@@ -38,6 +38,7 @@ responses_with_manager_level AS (
         mle.manager_email,
         mle.reporting_level,
         mle.level_employee_count,
+        mle.team_name,
         e.full_name
     FROM fact_responses f
     INNER JOIN employees e ON f.question_respondent_access_id = e.access_id
@@ -48,6 +49,7 @@ SELECT
     manager_employee_id,
     manager_full_name,
     manager_email,
+    team_name,
     reporting_level,
     level_employee_count,
 
@@ -194,6 +196,7 @@ GROUP BY
     manager_employee_id,
     manager_full_name,
     manager_email,
+    team_name,
     reporting_level,
     level_employee_count
 ORDER BY manager_full_name, reporting_level

@@ -45,6 +45,9 @@ import apiClient from '../services/apiClient';
 const MetricsQueryBuilder = () => {
   const [query, setQuery] = useState('');
   const [executedQuery, setExecutedQuery] = useState('');
+    // Sorting configuration
+    const [sortColumns, setSortColumns] = useState([]);
+    const [sortOrders, setSortOrders] = useState({});
   const [title, setTitle] = useState('Query Results');
   const [redThreshold, setRedThreshold] = useState(2.2);
   const [yellowThreshold, setYellowThreshold] = useState(4.0);
@@ -149,6 +152,18 @@ FROM data_lake_dev_xavi_gold.gold_climate_2025_by_manager`,
       ...prev,
       [metricName]: aggType,
     }));
+  };
+
+  const handleSortColumnToggle = (colName) => {
+    setSortColumns(prev =>
+      prev.includes(colName)
+        ? prev.filter(c => c !== colName)
+        : [...prev, colName]
+    );
+  };
+
+  const handleSortOrderChange = (colName, order) => {
+    setSortOrders(prev => ({ ...prev, [colName]: order }));
   };
 
   const handleExecute = () => {
@@ -347,6 +362,56 @@ FROM your_table"
                 </>
               )}
 
+              {availableColumns.length > 0 && (
+                <>
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 2 }} />
+                    <Typography variant="subtitle1" fontWeight="600" gutterBottom>
+                      Sorting Options
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      <Typography variant="subtitle2" fontWeight="600" gutterBottom>
+                        Select columns to sort and their order
+                      </Typography>
+                      <FormGroup row>
+                        {[...selectedDimensions, ...selectedMetrics].map(col => (
+                          <FormControlLabel
+                            key={col}
+                            control={
+                              <Checkbox
+                                checked={sortColumns.includes(col)}
+                                onChange={() => handleSortColumnToggle(col)}
+                              />
+                            }
+                            label={col}
+                          />
+                        ))}
+                      </FormGroup>
+                      {sortColumns.length > 0 && (
+                        <Box sx={{ mt: 2 }}>
+                          {sortColumns.map(colName => (
+                            <FormControl key={colName} sx={{ mr: 2, mb: 1, minWidth: 150 }} size="small">
+                              <InputLabel>{colName} Order</InputLabel>
+                              <Select
+                                value={sortOrders[colName] || 'ASC'}
+                                label={`${colName} Order`}
+                                onChange={e => handleSortOrderChange(colName, e.target.value)}
+                              >
+                                <MenuItem value="ASC">Ascending</MenuItem>
+                                <MenuItem value="DESC">Descending</MenuItem>
+                              </Select>
+                            </FormControl>
+                          ))}
+                        </Box>
+                      )}
+                    </Paper>
+                  </Grid>
+                </>
+              )}
+
               <Grid item xs={12}>
                 <Button
                   variant="contained"
@@ -386,7 +451,9 @@ FROM your_table"
           visibleColumns={getVisibleColumns()}
           groupByDimensions={getGroupByDimensions()}
           metricAggregations={getMetricAggregationsFormatted()}
-        />
+            sortColumns={sortColumns}
+            sortOrders={sortOrders}
+          />
       )}
     </Box>
   );

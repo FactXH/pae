@@ -32,7 +32,7 @@ dim_teams as (
 )
 
 select
-    jp.job_posting_id,
+    jp.c,
     jp.job_posting_title,
     jp.job_posting_description,
     jp.job_posting_contract_type,

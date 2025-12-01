@@ -21,4 +21,4 @@ def convert_decimal_separator(input_path, output_path=None):
 
 if __name__ == "__main__":
     import sys        
-    convert_decimal_separator("/home/xavier/Documents/pae/_adata/climate/climate_by_manager.csv", "/home/xavier/Documents/pae/_adata/climate/climate_by_manager_2025.xlsx")
+    convert_decimal_separator("/home/xavier/Documents/pae/_adata/climate/by_manager_quali.csv", "/home/xavier/Documents/pae/_adata/climate/climate_by_manager_2025_quali.xlsx")

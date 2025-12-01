@@ -25,8 +25,9 @@ employees_active_at_survey AS (
         employee_id,
         full_name,
         email,
-        access_id
-    FROM {{ ref('dim_employees') }}
+        access_id,
+        lowest_level_team_name_climate_2025 as team_name
+    FROM {{ ref('fact_employees') }}
     WHERE onboarding_date <= DATE '2025-09-10'
         AND (offboarding_date IS NULL OR offboarding_date > DATE '2025-09-10')
 ),
@@ -39,7 +40,8 @@ active_manager_reports AS (
         mr.manager_email,
         mr.report_employee_id,
         mr.reporting_level,
-        mr.is_direct_report
+        mr.is_direct_report,
+        emp_mgr.team_name AS team_name
     FROM manager_reports_scd mr
     INNER JOIN employees_active_at_survey emp_mgr 
         ON mr.manager_employee_id = emp_mgr.employee_id
@@ -54,6 +56,7 @@ manager_level_counts AS (
         manager_full_name,
         manager_email,
         reporting_level,
+        team_name,
         COUNT(DISTINCT report_employee_id) AS level_employee_count,
         ARRAY_AGG(DISTINCT report_employee_id) AS level_employee_ids
     FROM active_manager_reports
@@ -61,7 +64,8 @@ manager_level_counts AS (
         manager_employee_id,
         manager_full_name,
         manager_email,
-        reporting_level
+        reporting_level,
+        team_name
 ),
 
 valid_manager_levels AS (
@@ -71,6 +75,7 @@ valid_manager_levels AS (
         manager_full_name,
         manager_email,
         reporting_level,
+        team_name,
         level_employee_count,
         level_employee_ids
     FROM manager_level_counts
@@ -84,13 +89,15 @@ manager_all_levels AS (
         manager_full_name,
         manager_email,
         'all_levels' AS reporting_level,
+        team_name,
         COUNT(DISTINCT report_employee_id) AS level_employee_count,
         ARRAY_AGG(DISTINCT report_employee_id) AS level_employee_ids
     FROM active_manager_reports
     GROUP BY 
         manager_employee_id,
         manager_full_name,
-        manager_email
+        manager_email,
+        team_name
     HAVING COUNT(DISTINCT report_employee_id) > 4
 )
 
@@ -99,6 +106,7 @@ SELECT
     manager_employee_id,
     manager_full_name,
     manager_email,
+    team_name,
     CAST(reporting_level AS VARCHAR) AS reporting_level,
     level_employee_count,
     level_employee_ids
@@ -110,6 +118,7 @@ SELECT
     manager_employee_id,
     manager_full_name,
     manager_email,
+    team_name,
     reporting_level,
     level_employee_count,
     level_employee_ids

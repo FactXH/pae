@@ -45,7 +45,9 @@ const MetricsTable = ({
   thresholds = { red: 2.2, yellow: 4.0 },
   visibleColumns = null,
   groupByDimensions = null,
-  metricAggregations = {}
+  metricAggregations = {},
+  sortColumns = [],
+  sortOrders = {}
 }) => {
   const [data, setData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -56,7 +58,7 @@ const MetricsTable = ({
     if (query) {
       executeQuery();
     }
-  }, [query, visibleColumns, groupByDimensions, metricAggregations]);
+  }, [query, visibleColumns, groupByDimensions, metricAggregations, sortColumns, sortOrders]);
 
   const executeQuery = async () => {
     setLoading(true);
@@ -95,6 +97,15 @@ const MetricsTable = ({
             GROUP BY ${groupByDimensions.map(d => d.replace('__dim', '')).join(', ')}
           `;
         }
+      }
+
+      // Add ORDER BY clause if sort columns are specified
+      if (sortColumns && sortColumns.length > 0) {
+        const orderByParts = sortColumns.map(col => {
+          const order = sortOrders[col] || 'ASC';
+          return `${col} ${order}`;
+        });
+        finalQuery = finalQuery.trim().replace(/;?\s*$/, '') + `\nORDER BY ${orderByParts.join(', ')}`;
       }
 
       const result = await apiClient.executeSQL(finalQuery);

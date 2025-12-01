@@ -27,6 +27,11 @@ select
     applications.application_id,
     applications.ats_candidate_id,
     applications.application_source,
+
+    CASE WHEN applications.application_source = 'referred' THEN 'Referred'
+        WHEN applications.application_source = 'manually_added' THEN 'Outbound'
+        ELSE 'Inbound'
+    END as application_source_type,
     applications.application_medium,
     applications.application_qualified,
     applications.current_phase_type,

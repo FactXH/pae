@@ -1115,3 +1115,45 @@ select
     1 as count__metric__sum,
     case when is_hired = 'HIRED' then 1 else 0 end as count_hired__metric__sum
 from data_lake_dev_xavi_gold.fact_engineering_applications;
+
+
+
+
+select * from data_lake_dev_xavi_gold.gold_climate_2025_by_manager 
+
+;
+
+select * from data_lake_dev_xavi_gold.fact_engineering_applications;
+
+
+
+select distinct concat('https://app.factorialhr.com/recruitment/jobs/', cast(job_posting_id as varchar),  '/applications') from data_lake_dev_xavi_gold.fact_engineering_applications;
+
+
+"_col0"
+"https://app.factorialhr.com/recruitment/jobs/265724/applications"
+"https://app.factorialhr.com/recruitment/jobs/248493/applications"
+"https://app.factorialhr.com/recruitment/jobs/239670/applications"
+"https://app.factorialhr.com/recruitment/jobs/238793/applications"
+"https://app.factorialhr.com/recruitment/jobs/235705/applications"
+"https://app.factorialhr.com/recruitment/jobs/235148/applications"
+"https://app.factorialhr.com/recruitment/jobs/248466/applications"
+"https://app.factorialhr.com/recruitment/jobs/248488/applications"
+"https://app.factorialhr.com/recruitment/jobs/227422/applications"
+"https://app.factorialhr.com/recruitment/jobs/248312/applications"
+"https://app.factorialhr.com/recruitment/jobs/261530/applications"
+"https://app.factorialhr.com/recruitment/jobs/41921/applications"
+"https://app.factorialhr.com/recruitment/jobs/248463/applications"
+"https://app.factorialhr.com/recruitment/jobs/231526/applications"
+"https://app.factorialhr.com/recruitment/jobs/228957/applications"
+"https://app.factorialhr.com/recruitment/jobs/248310/applications"
+"https://app.factorialhr.com/recruitment/jobs/248304/applications"
+"https://app.factorialhr.com/recruitment/jobs/134399/applications"
+
+
+;
+
+select * from data_lake_dev_xavi_silver.dim_hires hires 
+left join data_lake_dev_xavi_silver.dim_job_postings postings
+on hires.job_posting_id = postings.job_posting_id
+where hired_date between '2025-06-01' and '2025-06-01'

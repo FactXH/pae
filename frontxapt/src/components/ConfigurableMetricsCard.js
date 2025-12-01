@@ -108,7 +108,8 @@ const ConfigurableMetricsCard = ({
   const [enabledFilters, setEnabledFilters] = useState({});
   const [metricRanges, setMetricRanges] = useState({}); // { metricName: [min, max] } - for raw data
   const [aggMetricRanges, setAggMetricRanges] = useState({}); // { metricName: [min, max] } - for aggregated data
-  const [sortConfig, setSortConfig] = useState({ column: null, direction: 'asc' });
+  const [sortColumns, setSortColumns] = useState([]); // Array of column names to sort by
+  const [sortOrders, setSortOrders] = useState({}); // { columnName: 'asc' | 'desc' }
   const [visibleColumns, setVisibleColumns] = useState([]);
   const [columnSearchFilter, setColumnSearchFilter] = useState('');
   const [configTab, setConfigTab] = useState(0);
@@ -215,7 +216,8 @@ const ConfigurableMetricsCard = ({
           setEnabledFilters(initialConfig.enabledFilters || {});
           setMetricRanges(initialConfig.metricRanges || {});
           setAggMetricRanges(initialConfig.aggMetricRanges || {});
-          setSortConfig(initialConfig.sortConfig || { column: null, direction: 'asc' });
+          setSortColumns(initialConfig.sortColumns || []);
+          setSortOrders(initialConfig.sortOrders || {});
         } else {
           // Use defaults: FIRST dimension selected for grouping by default
           const defaultGroupBy = dims.length > 0 ? [dims[0].fullName] : [];
@@ -356,10 +358,24 @@ const ConfigurableMetricsCard = ({
     const col = getColumnByName(columnName);
     if (!col?.isMetric) return; // Only sort by metrics
 
-    setSortConfig(prev => ({
-      column: columnName,
-      direction: prev.column === columnName && prev.direction === 'asc' ? 'desc' : 'asc'
-    }));
+    setSortColumns(prev => {
+      if (prev.includes(columnName)) {
+        // If already in list, toggle its order
+        const currentOrder = sortOrders[columnName] || 'asc';
+        setSortOrders(prevOrders => ({
+          ...prevOrders,
+          [columnName]: currentOrder === 'asc' ? 'desc' : 'asc'
+        }));
+        return prev;
+      } else {
+        // Add to sort columns
+        setSortOrders(prevOrders => ({
+          ...prevOrders,
+          [columnName]: 'asc'
+        }));
+        return [...prev, columnName];
+      }
+    });
   };
 
   const getUniqueValuesForDimension = (dimensionName) => {
@@ -702,29 +718,37 @@ const ConfigurableMetricsCard = ({
   };
 
   const applySorting = (data) => {
-    if (!sortConfig.column) return data;
+    if (!sortColumns || sortColumns.length === 0) return data;
 
     return [...data].sort((a, b) => {
-      const aVal = a[sortConfig.column];
-      const bVal = b[sortConfig.column];
+      for (const column of sortColumns) {
+        const aVal = a[column];
+        const bVal = b[column];
+        const order = sortOrders[column] || 'asc';
 
-      // Handle null/undefined
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
+        // Handle null/undefined
+        if (aVal == null && bVal == null) continue;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
 
-      // Numeric comparison for metrics
-      const aNum = Number(aVal);
-      const bNum = Number(bVal);
+        let comparison = 0;
+        // Numeric comparison for metrics
+        const aNum = Number(aVal);
+        const bNum = Number(bVal);
 
-      if (!isNaN(aNum) && !isNaN(bNum)) {
-        return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+          comparison = aNum - bNum;
+        } else {
+          // String comparison fallback
+          comparison = String(aVal).localeCompare(String(bVal));
+        }
+
+        if (comparison !== 0) {
+          return order === 'asc' ? comparison : -comparison;
+        }
+        // If equal, continue to next sort column
       }
-
-      // String comparison fallback
-      return sortConfig.direction === 'asc' 
-        ? String(aVal).localeCompare(String(bVal))
-        : String(bVal).localeCompare(String(aVal));
+      return 0;
     });
   };
 
@@ -876,7 +900,8 @@ const ConfigurableMetricsCard = ({
           aggMetricRanges: aggMetricRanges,
           visibleColumns: visibleColumns,
           selectedDimensions: selectedDimensions,
-          sortConfig: sortConfig
+          sortColumns: sortColumns,
+          sortOrders: sortOrders
         }
       };
 
@@ -1513,7 +1538,8 @@ const ConfigurableMetricsCard = ({
                     {getVisibleColumns().map(colName => {
                       const col = getColumnByName(colName);
                       const isSortable = col?.isMetric;
-                      const isCurrentSort = sortConfig.column === colName;
+                      const isInSortList = sortColumns.includes(colName);
+                      const sortIndex = sortColumns.indexOf(colName);
                       
                       return (
                         <TableCell 
@@ -1528,13 +1554,20 @@ const ConfigurableMetricsCard = ({
                         >
                           <Box display="flex" alignItems="center" gap={0.5}>
                             {isSortable ? (
-                              <TableSortLabel
-                                active={isCurrentSort}
-                                direction={isCurrentSort ? sortConfig.direction : 'asc'}
-                                sx={{ '& .MuiTableSortLabel-icon': { fontSize: '0.9rem' } }}
-                              >
-                                <span style={{ fontSize: '0.7rem' }}>{col?.displayName || colName}</span>
-                              </TableSortLabel>
+                              <Box display="flex" alignItems="center">
+                                <TableSortLabel
+                                  active={isInSortList}
+                                  direction={isInSortList ? (sortOrders[colName] || 'asc') : 'asc'}
+                                  sx={{ '& .MuiTableSortLabel-icon': { fontSize: '0.9rem' } }}
+                                >
+                                  <span style={{ fontSize: '0.7rem' }}>{col?.displayName || colName}</span>
+                                </TableSortLabel>
+                                {isInSortList && sortIndex >= 0 && (
+                                  <Typography component="span" variant="caption" sx={{ ml: 0.5, color: 'primary.main', fontWeight: 'bold', fontSize: '0.65rem' }}>
+                                    {sortIndex + 1}
+                                  </Typography>
+                                )}
+                              </Box>
                             ) : (
                               <span style={{ fontSize: '0.7rem' }}>{col?.displayName || colName}</span>
                             )}
