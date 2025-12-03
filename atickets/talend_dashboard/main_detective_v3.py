@@ -11,16 +11,19 @@ if pae_root_dir not in sys.path:
     sys.path.insert(0, pae_root_dir)
 
 
-from utils.detective.ta_detective_v2 import TADetectiveV2
+from utils.detective.ta_detective_v3 import TADetectiveV3
 from utils.query_runner.query_runner import QueryRunner
 
 def main():
     """
-    Run TA Detective V2 investigation
+    Run TA Detective V3 investigation with INDEPENDENT matching
+    - Matches employees to hires independently
+    - Matches employees to positions independently
+    - Combines results: employee can have hire only, position only, both, or neither
     """
     # Initialize query runner and detective
     query_runner = QueryRunner()
-    detective = TADetectiveV2(query_runner=query_runner)
+    detective = TADetectiveV3(query_runner=query_runner)
     
     # Define filters (optional - adjust as needed)
     filters = {
@@ -31,7 +34,7 @@ def main():
     
     # Run full investigation
     print("=" * 80)
-    print("TA DETECTIVE V2 - INVESTIGATION STARTING")
+    print("TA DETECTIVE V3 - INDEPENDENT MATCHING INVESTIGATION")
     print("=" * 80)
     
     results = detective.investigate(employee_filters=filters)
@@ -46,7 +49,7 @@ def main():
     
     # Export to Excel
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    output_path = os.path.join(current_dir, 'data', 'detective_results', f'ta_investigation_{timestamp}.xlsx')
+    output_path = os.path.join(current_dir, 'data', 'detective_results', f'ta_investigation_v3_{timestamp}.xlsx')
     
     # Create directory if it doesn't exist
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -58,13 +61,14 @@ def main():
     print(f"   {output_path}")
     print("=" * 80)
     
-    # Create matching table in Trino
+    # Create matching tables in Trino (TWO SEPARATE TABLES)
     print("\n" + "=" * 80)
-    print("CREATING MATCHING TABLE IN TRINO")
+    print("CREATING MATCHING TABLES IN TRINO (V3)")
     print("=" * 80)
-    detective.create_matching_table_in_trino(
+    detective.create_matching_tables_in_trino(
         schema='data_lake_dev_xavi_silver',
-        table_name='aux_job_position_matching',
+        hire_table_name='aux_employee_hires',
+        position_table_name='aux_employee_positions',
         if_exists='replace'
     )
     print("=" * 80)

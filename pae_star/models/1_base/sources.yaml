@@ -159,3 +159,7 @@ sources:
     tables:
       - name: aux_job_position_matching
         description: "Auxiliary table for job position matching analysis."
+
+      - name: aux_employee_hires
+
+      - name: aux_employee_positions

@@ -221,7 +221,7 @@ class TrinoLoader:
                 # Format each value properly (handle strings, None, numbers, timestamps)
                 formatted_values = []
                 for val in row:
-                    if val is None:
+                    if val is None or (isinstance(val, float) and pd.isna(val)):
                         formatted_values.append('NULL')
                     elif isinstance(val, str):
                         # Escape single quotes

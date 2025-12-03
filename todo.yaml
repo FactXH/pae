@@ -7,13 +7,12 @@ modeling
 - Proper base_team_scd constructed from raw and clean and also 
 
 
-
 - mart hires
   - employees
   - job_posting
   - applications
   - hiring process
 
-
-
 - mart applications
+
+- mart job positions

@@ -694,10 +694,11 @@ class TADetectiveV2:
         # Prepare data for the matching table
         matching_data = []
         for match in self.matched_records:
-            # Only include records that have both position and application data
-            if match.process_id and match.candidate_application_id and match.employee_id:
+            # Include ALL records - even partial matches!
+            # Save if we have at least application and employee (position is optional)
+            if match.candidate_application_id and match.employee_id:
                 matching_data.append({
-                    'position_id': match.process_id,
+                    'position_id': match.process_id,  # Can be NULL for partial matches
                     'application_id': match.candidate_application_id,
                     'application_updated_at': match.candidate_application_updated_at,
                     'employee_id': match.employee_id,
@@ -706,16 +707,21 @@ class TADetectiveV2:
                 })
         
         if not matching_data:
-            print("⚠️ No complete matching records to export (need position_id, application_id, and employee_id)")
+            print("⚠️ No matching records to export (need at least application_id and employee_id)")
             return
         
         # Create DataFrame
         df = pd.DataFrame(matching_data)
         
+        # Handle NaN values - replace with None for proper NULL handling in SQL
+        df = df.where(pd.notna(df), None)
+        
         # Ensure proper data types
         df['application_updated_at'] = pd.to_datetime(df['application_updated_at'])
-        df['hire_match_score'] = df['hire_match_score'].astype(float)
-        df['position_match_score'] = df['position_match_score'].astype(float)
+        
+        # Convert scores to float, handling None values
+        df['hire_match_score'] = df['hire_match_score'].apply(lambda x: float(x) if x is not None else None)
+        df['position_match_score'] = df['position_match_score'].apply(lambda x: float(x) if x is not None else None)
         
         print(f"📊 Prepared {len(df)} matching records for export")
         

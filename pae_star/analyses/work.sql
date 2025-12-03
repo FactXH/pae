@@ -819,11 +819,12 @@ select * from data_lake_dev_xavi_silver.dim_employees where full_name like '%Rus
 
 
 
+select * from data
+
 
 
 select * from data_lake_dev_xavi_gold.gold_climate_2025_answers; -equips i subequips
-select * from data_lake_dev_xavi_gold.gold_climate_2025_answers_managers; - manager i subnivell
-
+select * from data_lake_dev_xavi_gold.gold_climate_2025_by_managers; -- manager i subnivell
 ;
 
 select * from data_lake_bronze.ats_applications where id = 9527841;
@@ -1153,7 +1154,189 @@ select distinct concat('https://app.factorialhr.com/recruitment/jobs/', cast(job
 
 ;
 
-select * from data_lake_dev_xavi_silver.dim_hires hires 
+select hires.job_posting_title, count(*), array_join(array_agg(candidate_first_name), '-') as first_names from data_lake_dev_xavi_silver.dim_hires hires 
 left join data_lake_dev_xavi_silver.dim_job_postings postings
 on hires.job_posting_id = postings.job_posting_id
-where hired_date between '2025-06-01' and '2025-06-01'
+group by 1
+order by 2 desc;
+
+
+
+select * from data_lake_dev_xavi_gold.
+
+
+select * from data_lake_dev_xavi_gold.gold_climate_2025_by_manager;
+
+
+select * from data_lake_dev_xavi_silver.fact_employees;
+
+
+;
+
+select * from data_lake_dev_xavi_silver.dim_climate_2025_questions
+
+
+
+
+"question_label","column_name"
+"Policies and processes at Factorial are transparent and aligned with our values","policies_transparent"
+"Social events (Facts by Factorial, End of Year Dinner, Afterworks) provide great opportunities for bonding and sharing a fun time together","social_events"
+"Which team are you in?","team"
+"My leaders share information in a clear, transparent and consistent way","leaders_communication"
+"Write single words that express what you are grateful for at Factorial","grateful_for"
+"Write single words that express what you would like to see more at Factorial","would_like_to_see_more"
+"I am confident that I can grow and develop myself at Factorial","growth_confidence"
+"My workspace and office offer an excellent environment for working and recreation","workspace_environment"
+"I feel my contributions are valuable and make a differenceI feel my contributions are valuable and make a difference","contributions_valuable"
+"I am proud to be part of Factorial","proud_to_be_part"
+"My leaders inspire teamwork, make good decisions and effectively guide others towards common goals","leaders_inspire"
+"I believe Factorial offers competitive benefits (e.g., Alan, Wellhub, )","competitive_benefits"
+"The flexibility Factorial provides enables me to maintain a positive work/life balance","work_life_balance"
+"Feel free to share any feedback here!","additional_feedback"
+"How long have you been working in Factorial?","tenure"
+"What is your gender?","gender"
+"My leads and I have meaningful conversations that help me improve my performance","meaningful_conversations"
+"As far as I can see, I envision myself growing and staying at Factorial","envision_staying"
+"I feel I can trust my leaders","trust_leaders"
+"I consider Factorial's culture and values are put into practice daily","culture_and_values_practiced"
+"I consider Factorial a great place to work","great_place_to_work"
+"On a scale of 1 to 10, how likely are you to recommend Factorial as a great place to work?","nps_score"
+"I feel my accomplishments are recognised","accomplishments_recognised"
+"I believe that performance evaluations are fair, consistent, and reflect my contributions and achievements","performance_evaluations_fair"
+"Factorial provides clear and transparent information about compensation and career plans","compensation_transparency"
+"I feel there is a reasonable balance between what I contribute to the company and what I receive in return","contribution_balance"
+"The communications I receive from Factorial (via Slack, Factorial platform, All Hands), help me understand more about the company's culture, its context, and business vision","company_communications"
+"I strive to achieve goals and take initiative even when faced with challenges","initiative_and_goals"
+"I believe joining Factorial was a good decision","good_decision_to_join"
+
+
+
+;
+select * from data_lake_dev_xavi_silver.aux_job_position_matching;
+
+
+;
+select * from data_lake_bronze.ats_candidates limit 1
+
+
+;
+select * from data_lake_dev_xavi_silver.aux_job_position_matching limit 1;
+
+
+
+select * from data_lake_dev_xavi_gold.gold_hires limit 1;
+
+
+;
+select employee_id, full_name, onboarding_date, count(*) from data_lake_dev_xavi_silver.fact_employees group by 1, 2, 3 order by 4 desc limit 100
+
+;
+with repeated_employees as (
+    select 
+        employee_id,
+        count(*)
+    from data_lake_dev_xavi_silver.fact_employees
+    group by employee_id
+    having count(*) > 1
+)
+
+
+select * from data_lake_dev_xavi_silver.fact_employees where employee_id in (
+    select distinct employee_id from repeated_employees
+);
+
+
+    select 
+        employee_id,
+        count(*)
+    from data_lake_dev_xavi_silver.fact_employees
+    group by employee_id
+    order by 2 desc
+
+;
+
+
+select * from 
+data_lake_dev_xavi_gold.gold_orphan_positions;
+
+select 
+    file_hiring_year,
+    is_orphan,
+    count(*)
+from data_lake_dev_xavi_gold.gold_orphan_positions
+group by 1, 2
+order by 1, 2;
+
+
+
+
+
+
+
+select * from data_lake_dev_xavi_gold.gold_orphan_positions
+where is_orphan = 1;
+
+
+;
+select
+    year(onboarding_date),
+    count(*) as total_employee_hires,
+    SUM(case when matched_application_id is null then 0 else 1 end) as total_employee_with_application,
+    SUM(case when matched_position_id is null then 0 else 1 end) as total_employee_with_position
+from data_lake_dev_xavi_gold.gold_hires
+group by 1
+limit 100;
+;
+
+
+
+
+select position_matching_status,
+        CASE WHEN new_hire_name is null THEN 'NO_NEW_HIRE_NAME' ELSE 'HIRE NAME' END AS has_new_hire_name,
+        count(*)
+from data_lake_dev_xavi_gold.gold_orphan_positions
+where file_hiring_year = '2025'
+and position_status = 'CLOSED'
+group by 1,2
+order by 1;
+
+
+select
+    hire_matching_status,
+    case when matched_position_id is null then 'POSITION NOT FOUND' else 'POSITION FOUND' end as position_matching_status,
+    count(*)
+from data_lake_dev_xavi_gold.gold_orphan_hires
+where year(hired_date) = 2025
+group by 1,2;
+
+
+select * from 
+
+
+
+
+select * from data_lake_dev_xavi_gold.gold_orphan_positions limit 10
+
+
+
+
+select full_name, job_posting_title, position_name
+from data_lake_dev_xavi_gold.gold_hires
+
+
+;
+
+select 
+        is_closed,
+        new_hire_name,
+        count(*)
+from data_lake_dev_xavi_silver.dim_job_positions
+where file_hiring_year = '2025'
+and new_hire_name is null
+group by 1,2
+
+
+
+
+select * from data_lake_dev_xavi_gold.gold_orphan_hires;
+select * from data_lake_dev_xavi_gold.gold_orphan_positions;

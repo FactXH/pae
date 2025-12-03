@@ -10,7 +10,7 @@ WITH fact_responses AS (
 ),
 
 dim_managers AS (
-    SELECT * FROM {{ ref('dim_managers_climate_2025') }}
+    SELECT * FROM {{ ref('dim_managers_climate_2025_v2') }}
 ),
 
 employees AS (
@@ -23,6 +23,12 @@ manager_level_employees AS (
         dm.manager_employee_id,
         dm.manager_full_name,
         dm.manager_email,
+        dm.team_name,
+        dm.manager_lowest_level_team_name,
+        dm.manager_first_lowest_level_parent_team_name,
+        dm.manager_current_salary,
+        dm.manager_current_role,
+        dm.manager_onboarding_date,
         dm.reporting_level,
         dm.level_employee_count,
         employee_id_bigint
@@ -39,6 +45,11 @@ responses_with_manager_level AS (
         mle.reporting_level,
         mle.level_employee_count,
         mle.team_name,
+        mle.manager_lowest_level_team_name,
+        mle.manager_first_lowest_level_parent_team_name,
+        mle.manager_current_salary,
+        mle.manager_current_role,
+        mle.manager_onboarding_date,
         e.full_name
     FROM fact_responses f
     INNER JOIN employees e ON f.question_respondent_access_id = e.access_id
@@ -50,6 +61,11 @@ SELECT
     manager_full_name,
     manager_email,
     team_name,
+    manager_lowest_level_team_name,
+    manager_first_lowest_level_parent_team_name,
+    manager_current_salary,
+    manager_current_role,
+    manager_onboarding_date,
     reporting_level,
     level_employee_count,
 
@@ -197,6 +213,11 @@ GROUP BY
     manager_full_name,
     manager_email,
     team_name,
+    manager_lowest_level_team_name,
+    manager_first_lowest_level_parent_team_name,
+    manager_current_salary,
+    manager_current_role,
+    manager_onboarding_date,
     reporting_level,
     level_employee_count
 ORDER BY manager_full_name, reporting_level
